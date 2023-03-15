@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'cable_api.apps.CableApiConfig',
 ]
 
+AUTH_USER_MODEL = 'cable_api.User'
+
 REST_FRAMEWORK = {   
     'DEFAULT_AUTHENTICATION_CLASSES': (   
         'rest_framework_simplejwt.authentication.JWTAuthentication',
