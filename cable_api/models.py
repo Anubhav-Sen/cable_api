@@ -24,7 +24,7 @@ class UserManager(BaseUserManager):
     
     def create_superuser(self, user_name, email_address, password):
         """
-        A method responsible for creating a new user with admin privilages. 
+        A method responsible for creating a new user with administrative privilages set to true. 
         """
 
         user = self.model(
@@ -49,6 +49,7 @@ class User(AbstractBaseUser):
     - The manager for the custom user model.
     - The username field.
     - The required fields.
+    - Methods to handel permissions.
     """
 
     user_name = models.CharField(max_length=50)
@@ -65,3 +66,15 @@ class User(AbstractBaseUser):
 
     USERNAME_FIELD = 'email_address'
     REQUIRED_FIELDS = ['user_name', 'password']
+
+    def has_perm(self, perm, obj=None):
+        """
+        Method that checks if user has a specific permission. In this case user always has permissions.
+        """
+        return True
+    
+    def has_module_perms(self, app):
+        """
+        Method that checks if user has permissions to view a certain app. In this case a user can always view all apps.
+        """
+        return True
