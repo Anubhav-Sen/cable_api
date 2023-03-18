@@ -5,6 +5,10 @@ def profile_image_path(instance, filename):
     """
     A function responsible for generating a file path to store the users profile image.
     """
+    extension = filename.split('.')[-1]
+
+    filename = f'profile_image.{extension}'
+    
     path = f'users/{instance.email_address}/profile_image/{filename}'
 
     return path
@@ -74,7 +78,7 @@ class User(AbstractBaseUser):
 
     def __str__(self):
         """
-        Method that returns the email address of the user to represent the user object.
+        Method that returns the email address of the user to represent the user object in string format.
         """
         return self.email_address
 
