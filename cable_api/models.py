@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from cable_api.storage import OverwriteStorage
 
 def profile_image_path(instance, filename):
     """
@@ -8,7 +9,7 @@ def profile_image_path(instance, filename):
     extension = filename.split('.')[-1]
 
     filename = f'profile_image.{extension}'
-    
+
     path = f'users/{instance.email_address}/profile_image/{filename}'
 
     return path
@@ -64,7 +65,7 @@ class User(AbstractBaseUser):
     user_name = models.CharField(max_length=50)
     email_address = models.EmailField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
-    profile_image = models.ImageField(upload_to=profile_image_path, null=True, blank=True)
+    profile_image = models.ImageField(upload_to=profile_image_path, storage=OverwriteStorage(), null=True, blank=True)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
