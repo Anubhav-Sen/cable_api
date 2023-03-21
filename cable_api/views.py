@@ -4,20 +4,28 @@ from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from cable_api.serializers import UserSerializer
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def users(request):
     """
     A function that defines the "api/users/" endpoint.
     """
 
-    users = get_user_model().objects.all()
+    if request.method == 'GET':
 
-    users_serializer = UserSerializer(users, many=True)
+        users = get_user_model().objects.all()
 
-    response_dict = {'users': users_serializer.data}
+        users_serializer = UserSerializer(users, many=True)
 
-    return Response(response_dict, status=status.HTTP_200_OK)
+        response_dict = {'users': users_serializer.data}
 
-@api_view(['GET'])
-def test(request):
-    return Response('test', status=status.HTTP_200_OK)    
+        return Response(response_dict, status=status.HTTP_200_OK)
+    
+    elif request.method == "POST":
+
+        users_serializer = UserSerializer(data=request.data)
+
+        if users_serializer.is_valid():
+
+            response_dict = {'new_user': users_serializer.validated_data}
+
+            return Response(response_dict, status=status.HTTP_201_CREATED)
