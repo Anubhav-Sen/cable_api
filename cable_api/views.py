@@ -4,6 +4,11 @@ from rest_framework.response import Response
 
 @api_view(['GET'])
 def users(request):
+    """
+    A function that defines the "api/users/" endpoint.
+    """
+
+    
     return Response('users', status=status.HTTP_200_OK)
 
 @api_view(['GET'])
