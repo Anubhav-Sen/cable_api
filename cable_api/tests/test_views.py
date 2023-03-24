@@ -2,6 +2,7 @@ import json
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+from django.test import override_settings
 from django.contrib.auth import get_user_model
 from cable_api.factory import UserFactory
 
@@ -50,7 +51,7 @@ class TestUsers(APITestCase):
         endpoint = reverse('users')
 
         request_dict = {
-            
+            'user_name': ''
         }
 
         users = get_user_model().objects.all()
