@@ -1,3 +1,4 @@
+import json
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -10,6 +11,7 @@ class TestUsers(APITestCase):
     def setUp(self):
         
         self.user_factory = UserFactory.create_batch(5)
+        self.maxDiff = None
     
     def test_users_GET(self):
         """
@@ -19,5 +21,21 @@ class TestUsers(APITestCase):
 
         response = self.client.get(endpoint)
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['users']), 5)
+        users_list = []
+
+        for user in self.user_factory:
+
+            user_dict = {
+                'id': user.id,
+                'user_name': user.user_name,
+                'email_address': user.email_address,
+                'profile_image': user.profile_image.url
+            }
+
+            users_list.append(user_dict)
+
+        expected_response = {'users': users_list}
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+        
