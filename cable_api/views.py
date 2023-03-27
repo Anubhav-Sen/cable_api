@@ -25,7 +25,5 @@ def users(request):
         users_serializer = UserSerializer(data=request.data)
 
         if users_serializer.is_valid():
-
-            response_dict = {'new_user': users_serializer.validated_data}
-
-            return Response(response_dict, status=status.HTTP_201_CREATED)
+            
+            return Response({'test':'test'}, status=status.HTTP_201_CREATED)
