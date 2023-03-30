@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from django.test import override_settings
 from cable_api.factory import UserFactory
+from cable_api.serializers import UserSerializer
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -72,9 +73,12 @@ class TestUsers(APITestCase):
 
         new_user = get_user_model().objects.filter(user_name = 'test').first()
 
-        print(new_user.__dict__)
+        user_serializer = UserSerializer(new_user)
+
+        expected_response = {'new_user': user_serializer.data}
 
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
 
     def tearDown(self):
         """

@@ -22,10 +22,14 @@ def users(request):
     
     elif request.method == "POST":
 
-        users_serializer = UserSerializer(data=request.data)
+        user_serializer = UserSerializer(data=request.data)
 
-        if users_serializer.is_valid(raise_exception=True):
+        if user_serializer.is_valid(raise_exception=True):
             
-            new_user = get_user_model().objects.create_user(**users_serializer.validated_data)
+            new_user = get_user_model().objects.create_user(**user_serializer.validated_data)
+
+            user_serializer = UserSerializer(new_user)
+
+            response_dict = {'new_user': user_serializer.data}
                                     
-            return Response({'test':'test'}, status=status.HTTP_201_CREATED)
+            return Response(response_dict, status=status.HTTP_201_CREATED)
