@@ -3,7 +3,9 @@ from django.contrib.auth import get_user_model
 
 class UserSerializer(serializers.ModelSerializer):
     """
-    A class to serializes the fields of the user model into a python dictionary.
+    A class to:
+      - Serialize the fields of the user model into a python dictionary.
+      - Validate data passed to it. 
     """
     class Meta:
 

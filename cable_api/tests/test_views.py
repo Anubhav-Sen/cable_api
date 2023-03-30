@@ -1,14 +1,13 @@
 import json
 import shutil
-import tempfile
+from PIL import Image
+from io import BytesIO
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.test import override_settings
 from cable_api.factory import UserFactory
 from django.core.files.uploadedfile import SimpleUploadedFile
-from PIL import Image
-from io import BytesIO
 
 @override_settings(MEDIA_ROOT = 'cable_api/tests/media')
 class TestUsers(APITestCase):
@@ -77,5 +76,5 @@ class TestUsers(APITestCase):
         A method to delete data and revert the changes made using the setup method after each test run.
         """
         self.user_factory.reset_sequence()
-        
+
         shutil.rmtree('cable_api/tests/media')
