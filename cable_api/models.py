@@ -18,7 +18,7 @@ class UserManager(BaseUserManager):
     """
     A Class that defines methodes to manage the custom user model.
     """
-    def create_user(self, user_name, email_address, password):
+    def create_user(self, user_name, email_address, password, **kwargs):
         """
         A method responsible for creating a new user and saving them to the database.
         """

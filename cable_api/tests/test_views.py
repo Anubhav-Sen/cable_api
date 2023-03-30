@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from django.test import override_settings
 from cable_api.factory import UserFactory
+from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 @override_settings(MEDIA_ROOT = 'cable_api/tests/media')
@@ -68,6 +69,10 @@ class TestUsers(APITestCase):
         }
 
         response = self.client.post(endpoint, request_dict, format='multipart')
+
+        new_user = get_user_model().objects.filter(user_name = 'test').first()
+
+        print(new_user.__dict__)
 
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
 
