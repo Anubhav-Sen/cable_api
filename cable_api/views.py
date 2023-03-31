@@ -1,5 +1,6 @@
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from cable_api.serializers import UserSerializer
@@ -33,3 +34,13 @@ def users(request):
             response_dict = {'new_user': user_serializer.data}
                                     
             return Response(response_dict, status=status.HTTP_201_CREATED)
+        
+@api_view(['GET', 'PATCH', 'DELETE'])
+def user(request, user_id):
+    """
+    A function that defines the "api/users/user_id" endpoint.
+    """
+    
+    if request.method == 'GET':
+
+        pass
