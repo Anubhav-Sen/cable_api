@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 @override_settings(MEDIA_ROOT = 'cable_api/tests/media')
-class TestUsers(APITestCase):
+class TestUsersView(APITestCase):
     """
     A class to test the "api/users/" endpoint.
     """
@@ -87,3 +87,34 @@ class TestUsers(APITestCase):
         self.user_factory.reset_sequence()
 
         shutil.rmtree('cable_api/tests/media')
+
+class TestUserViewNoAuth(APITestCase):
+    """
+    A class to test the "api/users/user_id" endpoint for methods where authentication isn't needed.
+    """
+    def setUp(self):
+        """
+        A method to define the base setup for this test class.
+        """
+        self.user_factory = UserFactory()
+        self.maxDiff = None
+
+    def test_user_view_no_auth_GET(self):
+        """
+        A method to test the GET method of the "api/users/user_id" endpoint.
+        """
+        endpoint = reverse('user', kwargs={'user_id': self.user_factory.id})
+
+        user_dict = {
+            'id': self.user_factory.id,
+            'user_name': self.user_factory.user_name,
+            'email_address': self.user_factory.email_address,
+            'profile_image': self.user_factory.profile_image.url,
+        }
+
+        expected_response = {'user': user_dict}
+
+        response = self.client.get(endpoint)
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))

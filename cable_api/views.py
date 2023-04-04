@@ -6,11 +6,10 @@ from django.contrib.auth import get_user_model
 from cable_api.serializers import UserSerializer
 
 @api_view(['GET', 'POST'])
-def users(request):
+def users_view(request):
     """
     A function that defines the "api/users/" endpoint.
     """
-
     if request.method == 'GET':
 
         users = get_user_model().objects.all()
@@ -35,12 +34,17 @@ def users(request):
                                     
             return Response(response_dict, status=status.HTTP_201_CREATED)
         
-@api_view(['GET', 'PATCH', 'DELETE'])
-def user(request, user_id):
+@api_view(['GET'])
+def user_view(request, user_id):
     """
-    A function that defines the "api/users/user_id" endpoint.
-    """
-    
+    A function that defines the methods of the "api/users/user_id" endpoint that dont need authentication.
+    """    
     if request.method == 'GET':
 
-        pass
+        user = get_user_model().objects.filter(id = user_id).first()
+
+        user_serializer = UserSerializer(user)
+
+        response_dict = {'user': user_serializer.data}
+
+        return Response(response_dict, status=status.HTTP_200_OK)      
