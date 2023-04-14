@@ -11,6 +11,35 @@ from cable_api.serializers import UserSerializer
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+def get_auth_headers(client, user):
+        """
+        A function to get authentiation headers.
+        """ 
+        auth_endpoint = reverse('token_obtain_pair')
+
+        auth_credentials = {
+            'email_address': user.email_address,
+            'password': 'testpassword'
+        }
+    
+        auth_response = client.post(auth_endpoint, auth_credentials)
+
+        auth_headers = {'HTTP_AUTHORIZATION':f'Bearer {json.loads(auth_response.content)["access"]}'}
+
+        return auth_headers
+
+def temp_file():
+    """
+    A function to create a temporary in memory image file.
+    """
+    bts = BytesIO()
+    img = Image.new("RGB", (100, 100))
+    img.save(bts, 'jpeg')
+
+    temp_file = SimpleUploadedFile("file.jpg", bts.getvalue(), content_type="image/jpg")
+
+    return temp_file
+
 @override_settings(MEDIA_ROOT = 'cable_api/tests/media')
 class TestUsersView(APITestCase):
     """
@@ -56,16 +85,12 @@ class TestUsersView(APITestCase):
         """
         endpoint = reverse('users')
 
-        bts = BytesIO()
-        img = Image.new("RGB", (100, 100))
-        img.save(bts, 'jpeg')
-
-        tmp_file = SimpleUploadedFile("file.jpg", bts.getvalue(), content_type="image/jpg")
-        
+        profile_image = temp_file()
+       
         request_dict = {
             'user_name': 'test',
             'email_address': 'test@test.com',
-            'profile_image': tmp_file,
+            'profile_image': profile_image,
             'password': 'test_password',
         }
 
@@ -88,28 +113,29 @@ class TestUsersView(APITestCase):
 
         shutil.rmtree('cable_api/tests/media')
 
-class TestUserViewNoAuth(APITestCase):
+class TestUserView(APITestCase):
     """
-    A class to test the "api/users/user_id" endpoint for methods where authentication isn't needed.
+    A class to test the "api/users/user_id" endpoint.
     """
     def setUp(self):
         """
         A method to define the base setup for this test class.
         """
-        self.user_factory = UserFactory()
+        self.user_object = UserFactory.create()
+        self.auth_headers = get_auth_headers(self.client, self.user_object)
         self.maxDiff = None
 
-    def test_user_view_no_auth_GET(self):
+    def test_user_view_GET(self):
         """
         A method to test the GET method of the "api/users/user_id" endpoint.
         """
-        endpoint = reverse('user', kwargs={'user_id': self.user_factory.id})
+        endpoint = reverse('user', kwargs={'user_id': self.user_object.id})
 
         user_dict = {
-            'id': self.user_factory.id,
-            'user_name': self.user_factory.user_name,
-            'email_address': self.user_factory.email_address,
-            'profile_image': self.user_factory.profile_image.url,
+            'id': self.user_object.id,
+            'user_name': self.user_object.user_name,
+            'email_address': self.user_object.email_address,
+            'profile_image': self.user_object.profile_image.url,
         }
 
         expected_response = {'user': user_dict}
@@ -118,3 +144,21 @@ class TestUserViewNoAuth(APITestCase):
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_user_view_PATCH(self):
+        """
+        A method to test the PATCH method of the "api/users/user_id" endpoint.
+        """
+        endpoint = reverse('user', kwargs={'user_id': self.user_object.id})
+
+        profile_image = temp_file()
+        
+        request_dict = {
+            'user_name': 'updated_username',
+            'profile_image': profile_image,
+            'password': 'updated_test_password',
+        }
+
+        response = self.client.patch(endpoint, request_dict, format='multipart', **self.auth_headers)
+
+        print(json.loads(response.content))

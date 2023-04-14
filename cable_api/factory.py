@@ -12,5 +12,5 @@ class UserFactory(factory.django.DjangoModelFactory):
 
     user_name = factory.Sequence(lambda n: 'test{}'.format(n))
     email_address = factory.Sequence(lambda n: 'test{}@test.com'.format(n))
-    password = factory.LazyFunction(lambda: make_password('pi3.1415'))
+    password = factory.LazyFunction(lambda: make_password('testpassword'))
     profile_image = factory.django.ImageField(width=60, height=60)
