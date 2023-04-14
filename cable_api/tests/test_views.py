@@ -28,15 +28,15 @@ def get_auth_headers(client, user):
 
         return auth_headers
 
-def temp_file():
+def create_temp_image(filename = 'file'):
     """
     A function to create a temporary in memory image file.
     """
     bts = BytesIO()
-    img = Image.new("RGB", (100, 100))
+    img = Image.new('RGB', (100, 100))
     img.save(bts, 'jpeg')
 
-    temp_file = SimpleUploadedFile("file.jpg", bts.getvalue(), content_type="image/jpg")
+    temp_file = SimpleUploadedFile(f'{filename}.jpg', bts.getvalue(), content_type='image/jpg')
 
     return temp_file
 
@@ -85,7 +85,7 @@ class TestUsersView(APITestCase):
         """
         endpoint = reverse('users')
 
-        profile_image = temp_file()
+        profile_image = create_temp_image()
        
         request_dict = {
             'user_name': 'test',
@@ -151,14 +151,24 @@ class TestUserView(APITestCase):
         """
         endpoint = reverse('user', kwargs={'user_id': self.user_object.id})
 
-        profile_image = temp_file()
+        profile_image = create_temp_image('updated_profile_image')
         
         request_dict = {
             'user_name': 'updated_username',
             'profile_image': profile_image,
-            'password': 'updated_test_password',
+            'password': 'updated_password',
         }
+
+        user_dict = {
+            'id': self.user_object.id,
+            'user_name': 'updated_username',
+            'email_address': self.user_object.email_address,
+            'profile_image': '/media/updated_profile_image.jpg',
+        }
+ 
+        expected_response = {'updated_user': user_dict}
 
         response = self.client.patch(endpoint, request_dict, format='multipart', **self.auth_headers)
 
-        print(json.loads(response.content))
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
