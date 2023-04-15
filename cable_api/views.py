@@ -34,7 +34,7 @@ def users_view(request):
                                     
             return Response(response_dict, status=status.HTTP_201_CREATED)
         
-@api_view(['GET', 'PATCH'])
+@api_view(['GET', 'PATCH', 'DELETE'])
 @permission_classes([IsAuthenticatedOrReadOnly])
 def user_view(request, user_id):
     """
@@ -42,7 +42,13 @@ def user_view(request, user_id):
     """    
     if request.method == 'GET':
 
-        user = get_user_model().objects.get(id = user_id)
+        user = get_user_model().objects.filter(id = user_id).first()
+
+        if user == None:
+
+            response_dict = {'detail': 'This object does not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
 
         user_serializer = UserSerializer(user)
 
@@ -58,7 +64,7 @@ def user_view(request, user_id):
 
             response_dict = {'detail': 'This object does not exist.'}
 
-            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
         
         elif request.user.id != user_id:
 
@@ -85,3 +91,19 @@ def user_view(request, user_id):
             response_dict = {'updated_user': user_serializer.data} 
       
             return Response(response_dict, status=status.HTTP_200_OK)
+    
+    elif request.method == 'DELETE':
+
+        user = get_user_model().objects.filter(id = user_id).first()
+
+        if user == None:
+
+            response_dict = {'detail': 'This object does not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+        
+        user.delete()
+
+        response_dict = {'detail': 'This object has been deleted.'}
+
+        return Response(response_dict, status=status.HTTP_200_OK)

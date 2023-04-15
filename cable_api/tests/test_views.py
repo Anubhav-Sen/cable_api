@@ -172,3 +172,19 @@ class TestUserView(APITestCase):
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
+    
+    def test_user_view_DELETE(self):
+        """
+        A method to test the DELETE method of the "api/users/user_id" endpoint.
+        """ 
+        endpoint = reverse('user', kwargs={'user_id': self.user_object.id})
+
+        expected_response = {'detail': 'This object has been deleted.'}
+
+        response = self.client.delete(endpoint, **self.auth_headers)
+
+        user = get_user_model().objects.filter(id = self.user_object.id).first()
+
+        self.assertEqual(None, user)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
