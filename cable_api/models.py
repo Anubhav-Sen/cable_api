@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from cable_api.storage import OverwriteStorage
 
@@ -110,4 +111,26 @@ class Chat(models.Model):
         Method that returns the chat id to represent the chat object in string format.
         """
 
-        return f"Chat_{self.id}"
+        return f"chat_{self.id}"
+    
+class Participant(models.Model):
+    """
+    A class that defines:
+    - The fields of the participant model.
+    - The __str__ method for the chat model.
+    """
+    model_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='participants')
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['chat', 'model_user'], name='unique_chat_and_participant_combination')
+        ]
+
+    def __str__(self):
+        """
+        Method that returns the participant id to represent the participant object in string format.
+        """
+        return f'participant_{self.id}'
