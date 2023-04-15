@@ -94,3 +94,20 @@ class User(AbstractBaseUser):
         Method that checks if user has permissions to view a certain app. In this case a user can always view all apps.
         """
         return True
+    
+class Chat(models.Model):
+    """
+    A class that defines:
+    - The fields of the chat model.
+    - The __str__ method for the chat model.
+    """
+    display_name = models.CharField(max_length=255, blank=True, null=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        """
+        Method that returns the chat id to represent the chat object in string format.
+        """
+
+        return f"Chat_{self.id}"
