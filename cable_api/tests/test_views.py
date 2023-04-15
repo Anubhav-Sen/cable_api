@@ -113,6 +113,7 @@ class TestUsersView(APITestCase):
 
         shutil.rmtree('cable_api/tests/media')
 
+@override_settings(MEDIA_ROOT = 'cable_api/tests/media')
 class TestUserView(APITestCase):
     """
     A class to test the "api/users/user_id" endpoint.
@@ -188,3 +189,9 @@ class TestUserView(APITestCase):
         self.assertEqual(None, user)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
+
+    def tearDown(self):
+        """
+        A method to delete data and revert the changes made using the setup method after each test run.
+        """
+        shutil.rmtree('cable_api/tests/media')
