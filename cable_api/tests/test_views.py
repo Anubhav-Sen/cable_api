@@ -6,7 +6,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.test import override_settings
-from cable_api.factory import UserFactory
+from cable_api.factory import UserFactory, ChatFactory
 from cable_api.serializers import UserSerializer
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -195,3 +195,15 @@ class TestUserView(APITestCase):
         A method to delete data and revert the changes made using the setup method after each test run.
         """
         shutil.rmtree('cable_api/tests/media')
+
+class TestChatsView(APITestCase):
+    """
+    A class to test the "api/chats/" endpoint.
+    """
+    def setUp(self):
+        """
+        A method to define the base setup for this test class.
+        """
+        self.user_object = ChatFactory.create()
+        self.auth_headers = get_auth_headers(self.client, self.user_object)
+        self.maxDiff = None

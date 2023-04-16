@@ -107,3 +107,9 @@ def user_view(request, user_id):
         response_dict = {'detail': 'This object has been deleted.'}
 
         return Response(response_dict, status=status.HTTP_200_OK)
+    
+def chats_view(request):
+    """
+    A function that defines the "api/chats/" endpoint.
+    """
+    pass
