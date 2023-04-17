@@ -32,5 +32,5 @@ class ParticipantFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Participant
 
-    model_user = factory.RelatedFactory(UserFactory, factory_related_name='model_user_of')
-    chat = factory.RelatedFactory(ChatFactory, factory_related_name='chat_of')
+    model_user = factory.SubFactory(UserFactory)
+    chat = factory.SubFactory(ChatFactory)

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from cable_api.models import Chat, Participant
 
 class UserSerializer(serializers.ModelSerializer):
     """
@@ -45,3 +46,35 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             'profile_image': {'required': False, 'allow_null': True},
             'password': {'required': False, 'allow_null': True}
         }
+
+class ParticipantSerializer(serializers.ModelSerializer):
+    """
+    A class to:
+      - Serialize the editable fields of the paticipant model into a python dictionary.
+      - Validate data passed to it. 
+    """
+    model_user = UserSerializer()
+
+    class Meta:
+
+        model = Participant
+
+        fields = ['model_user'] 
+
+class ChatSerializer(serializers.ModelSerializer):
+    """
+    A class to:
+      - Serialize the editable fields of the chat model into a python dictionary.
+      - Validate data passed to it. 
+    """
+    participants = ParticipantSerializer(many=True)
+    
+    class Meta:
+
+        model = Chat
+
+        fields = [   
+            'chat_id',
+            'display_name',
+            'participants'
+        ]

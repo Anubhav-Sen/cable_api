@@ -6,9 +6,10 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.test import override_settings
-from cable_api.factory import UserFactory, ChatFactory
+from cable_api.factory import UserFactory, ChatFactory, ParticipantFactory
 from cable_api.serializers import UserSerializer
 from django.contrib.auth import get_user_model
+from cable_api.models import Chat, Participant
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 def get_auth_headers(client, user):
@@ -204,6 +205,22 @@ class TestChatsView(APITestCase):
         """
         A method to define the base setup for this test class.
         """
-        self.user_object = ChatFactory.create()
-        self.auth_headers = get_auth_headers(self.client, self.user_object)
+        self.user_factory = UserFactory
+        self.chat_factory = ChatFactory
+        self.participant_factory = ParticipantFactory
         self.maxDiff = None
+
+        for index in range(5):
+
+            participant_one = self.user_factory.create()
+            participant_two = self.user_factory.create()
+            chat = self.chat_factory.create()
+
+            self.participant_factory(model_user = participant_one, chat = chat)
+            self.participant_factory(model_user = participant_two, chat = chat)
+
+    def test_chats_view_GET(self):
+
+        participants = Participant.objects.all()
+
+        print(participants)
