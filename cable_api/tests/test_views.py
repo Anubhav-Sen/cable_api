@@ -123,21 +123,21 @@ class TestUserView(APITestCase):
         """
         A method to define the base setup for this test class.
         """
-        self.user_object = UserFactory.create()
-        self.auth_headers = get_auth_headers(self.client, self.user_object)
+        self.auth_user = UserFactory.create()
+        self.auth_headers = get_auth_headers(self.client, self.auth_user)
         self.maxDiff = None
 
     def test_user_view_GET(self):
         """
         A method to test the GET method of the "api/users/user_id" endpoint.
         """
-        endpoint = reverse('user', kwargs={'user_id': self.user_object.id})
+        endpoint = reverse('user', kwargs={'user_id': self.auth_user.id})
 
         user_dict = {
-            'id': self.user_object.id,
-            'user_name': self.user_object.user_name,
-            'email_address': self.user_object.email_address,
-            'profile_image': self.user_object.profile_image.url,
+            'id': self.auth_user.id,
+            'user_name': self.auth_user.user_name,
+            'email_address': self.auth_user.email_address,
+            'profile_image': self.auth_user.profile_image.url,
         }
 
         expected_response = {'user': user_dict}
@@ -151,7 +151,7 @@ class TestUserView(APITestCase):
         """
         A method to test the PATCH method of the "api/users/user_id" endpoint.
         """
-        endpoint = reverse('user', kwargs={'user_id': self.user_object.id})
+        endpoint = reverse('user', kwargs={'user_id': self.auth_user.id})
 
         profile_image = create_temp_image('updated_profile_image')
         
@@ -162,9 +162,9 @@ class TestUserView(APITestCase):
         }
 
         user_dict = {
-            'id': self.user_object.id,
+            'id': self.auth_user.id,
             'user_name': 'updated_username',
-            'email_address': self.user_object.email_address,
+            'email_address': self.auth_user.email_address,
             'profile_image': '/media/updated_profile_image.jpg',
         }
  
@@ -179,13 +179,13 @@ class TestUserView(APITestCase):
         """
         A method to test the DELETE method of the "api/users/user_id" endpoint.
         """ 
-        endpoint = reverse('user', kwargs={'user_id': self.user_object.id})
+        endpoint = reverse('user', kwargs={'user_id': self.auth_user.id})
 
         expected_response = {'detail': 'This object has been deleted.'}
 
         response = self.client.delete(endpoint, **self.auth_headers)
 
-        user = get_user_model().objects.filter(id = self.user_object.id).first()
+        user = get_user_model().objects.filter(id = self.auth_user.id).first()
 
         self.assertEqual(None, user)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
@@ -209,27 +209,63 @@ class TestChatsView(APITestCase):
         self.user_factory = UserFactory
         self.chat_factory = ChatFactory
         self.participant_factory = ParticipantFactory
+        self.auth_user = self.user_factory.create()
+        self.user_objects = self.user_factory.create_batch(5)
+        self.chat_objects = self.chat_factory.create_batch(5)
+        self.auth_headers = get_auth_headers(self.client, self.auth_user)
         self.maxDiff = None
+        
+        for index in range(5):
+
+            self.participant_factory(model_user = self.auth_user, chat = self.chat_objects[index])
+            self.participant_factory(model_user = self.user_objects[index], chat = self.chat_objects[index])
+        
+    def test_chats_view_GET(self):
+        """
+        A method to test the GET method of the "api/chats" endpoint.
+        """ 
+        endpoint = reverse('chats')
+
+        chats = []
 
         for index in range(5):
 
-            participant_one = self.user_factory.create()
-            participant_two = self.user_factory.create()
-            chat = self.chat_factory.create()
+            participant_one = {
+                'id': self.auth_user.id,
+                'user_name': self.auth_user.user_name,
+                'email_address': self.auth_user.email_address,
+                'profile_image': self.auth_user.profile_image.url,
+            }
 
-            self.participant_factory(model_user = participant_one, chat = chat)
-            self.participant_factory(model_user = participant_two, chat = chat)
+            participant_two = {
+                'id': self.user_objects[index].id,
+                'user_name': self.user_objects[index].user_name,
+                'email_address': self.user_objects[index].email_address,
+                'profile_image': self.user_objects[index].profile_image.url,
+            }
 
-    def test_chats_view_GET(self):
+            participants = [{'model_user': participant_one}, {'model_user': participant_two}]      
 
-        endpoint = reverse
+            chat = {
+                'id': self.chat_objects[index].id,
+                'display_name': self.chat_objects[index].display_name,
+                'participants': participants
+            }
 
-        participants = Participant.objects.all()
+            chats.append(chat)
 
-        print(participants)
+        expected_response = {'chats': chats}
+
+        response = self.client.get(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
 
     def tearDown(self):
         """
         A method to delete data and revert the changes made using the setup method after each test run.
         """
+        self.user_factory.reset_sequence()
+        self.chat_factory.reset_sequence()
+
         shutil.rmtree('cable_api/tests/media')

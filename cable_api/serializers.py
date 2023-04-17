@@ -74,7 +74,7 @@ class ChatSerializer(serializers.ModelSerializer):
         model = Chat
 
         fields = [   
-            'chat_id',
+            'id',
             'display_name',
             'participants'
         ]

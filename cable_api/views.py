@@ -114,7 +114,9 @@ def user_view(request, user_id):
         response_dict = {'detail': 'This object has been deleted.'}
 
         return Response(response_dict, status=status.HTTP_200_OK)
-    
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])  
 def chats_view(request):
     """
     A function that defines the "api/chats/" endpoint.
@@ -130,7 +132,7 @@ def chats_view(request):
             return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
 
         chat_serializer = ChatSerializer(chats, many=True)
+        
+        response_dict = {'chats': chat_serializer.data}
 
-        if chat_serializer.is_valid(raise_exception=True):
-
-            response_dict = {'chats': chat_serializer.data}
+        return Response(response_dict, status=status.HTTP_200_OK)
