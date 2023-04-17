@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from cable_api.models import Chat, Participant
-from cable_api.serializers import UserSerializer, UserUpdateSerializer, ChatSerializer
+from cable_api.serializers import UserSerializer, UserUpdateSerializer, ChatObjectSerializer
 
 @api_view(['GET', 'POST'])
 def users_view(request):
@@ -115,7 +115,7 @@ def user_view(request, user_id):
 
         return Response(response_dict, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])  
 def chats_view(request):
     """
@@ -131,8 +131,11 @@ def chats_view(request):
 
             return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
 
-        chat_serializer = ChatSerializer(chats, many=True)
+        chat_object_serializer = ChatObjectSerializer(chats, many=True)
         
-        response_dict = {'chats': chat_serializer.data}
+        response_dict = {'chats': chat_object_serializer.data}
 
         return Response(response_dict, status=status.HTTP_200_OK)
+    
+    elif request.method == 'POST':
+

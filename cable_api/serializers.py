@@ -46,11 +46,26 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             'profile_image': {'required': False, 'allow_null': True},
             'password': {'required': False, 'allow_null': True}
         }
-
-class ParticipantSerializer(serializers.ModelSerializer):
+        
+class ChatSerializer(serializers.ModelSerializer):
     """
     A class to:
-      - Serialize the editable fields of the paticipant model into a python dictionary.
+      - Serialize the fields of the chat model into a python dictionary.
+      - Validate data passed to it.  
+    """
+    class Meta:
+
+        model = Chat
+
+        fields = [   
+            'id',
+            'display_name'
+        ]
+
+class ParticipantingUserSerializer(serializers.ModelSerializer):
+    """
+    A class to:
+      - Serialize the model user field of the paticipant model into a python dictionary.
       - Validate data passed to it. 
     """
     model_user = UserSerializer()
@@ -61,13 +76,13 @@ class ParticipantSerializer(serializers.ModelSerializer):
 
         fields = ['model_user'] 
 
-class ChatSerializer(serializers.ModelSerializer):
+class ChatObjectSerializer(serializers.ModelSerializer):
     """
     A class to:
-      - Serialize the editable fields of the chat model into a python dictionary.
-      - Validate data passed to it. 
+      - Serialize the fields of the chat model into a python dictionary with an additional field containing chat participants.
+      - Validate data passed to it.  
     """
-    participants = ParticipantSerializer(many=True)
+    participants = ParticipantingUserSerializer(many=True)
     
     class Meta:
 
