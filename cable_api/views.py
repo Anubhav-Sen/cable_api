@@ -15,6 +15,12 @@ def users_view(request):
 
         users = get_user_model().objects.all()
 
+        if users == None:
+
+            response_dict = {'detail': 'These objects do not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+
         users_serializer = UserSerializer(users, many=True)
 
         response_dict = {'users': users_serializer.data}
@@ -116,6 +122,12 @@ def chats_view(request):
     if request.method == 'GET':
 
         chats = Chat.objects.filter(participants__model_user = request.user).all()
+
+        if chats == None:
+
+            response_dict = {'detail': 'These objects do not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
 
         chat_serializer = ChatSerializer(chats, many=True)
 

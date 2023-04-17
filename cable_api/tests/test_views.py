@@ -197,6 +197,7 @@ class TestUserView(APITestCase):
         """
         shutil.rmtree('cable_api/tests/media')
 
+@override_settings(MEDIA_ROOT = 'cable_api/tests/media')
 class TestChatsView(APITestCase):
     """
     A class to test the "api/chats/" endpoint.
@@ -221,6 +222,14 @@ class TestChatsView(APITestCase):
 
     def test_chats_view_GET(self):
 
+        endpoint = reverse
+
         participants = Participant.objects.all()
 
         print(participants)
+
+    def tearDown(self):
+        """
+        A method to delete data and revert the changes made using the setup method after each test run.
+        """
+        shutil.rmtree('cable_api/tests/media')
