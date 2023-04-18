@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from cable_api.models import Chat, Participant
-from cable_api.serializers import UserSerializer, UserUpdateSerializer, ChatObjectSerializer
+from cable_api.serializers import UserSerializer, UserUpdateSerializer, ChatObjectSerializer, ChatSerializer
 
 @api_view(['GET', 'POST'])
 def users_view(request):
@@ -139,3 +139,8 @@ def chats_view(request):
     
     elif request.method == 'POST':
 
+        chat_serializer = ChatSerializer(data=request.data)
+
+        if chat_serializer.is_valid(raise_exception=True):
+
+            pass
