@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from cable_api.models import Chat, Participant
-from cable_api.serializers import UserSerializer, UserUpdateSerializer, ChatObjectSerializer, ChatSerializer
+from cable_api.serializers import UserSerializer, UserUpdateSerializer, ChatSerializer, EmailSerializer
 
 @api_view(['GET', 'POST'])
 def users_view(request):
@@ -79,17 +79,17 @@ def user_view(request, user_id):
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
 
-        update_serializer = UserUpdateSerializer(data=request.data)  
+        user_update_serializer = UserUpdateSerializer(data=request.data)  
 
-        if update_serializer.is_valid(raise_exception=True):
+        if user_update_serializer.is_valid(raise_exception=True):
             
-            for key, value in update_serializer.validated_data.copy().items():
+            for key, value in user_update_serializer.validated_data.copy().items():
                 
                 if value == None:
 
-                    update_serializer.validated_data.pop(key)
+                    user_update_serializer.validated_data.pop(key)
                         
-            get_user_model().objects.filter(id = user_id).update(**update_serializer.validated_data)
+            get_user_model().objects.filter(id = user_id).update(**user_update_serializer.validated_data)
 
             updated_user = get_user_model().objects.get(id = user_id)       
 
@@ -131,16 +131,47 @@ def chats_view(request):
 
             return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
 
-        chat_object_serializer = ChatObjectSerializer(chats, many=True)
+        chat_serializer = ChatSerializer(chats, many=True)
         
-        response_dict = {'chats': chat_object_serializer.data}
+        response_dict = {'chats': chat_serializer.data}
 
         return Response(response_dict, status=status.HTTP_200_OK)
     
     elif request.method == 'POST':
 
+        email_serializer = EmailSerializer(data=request.data)
+
+        chat_user = None
+
+        if email_serializer.is_valid(raise_exception=True):
+
+            chat_user = get_user_model().filter(email_address = email_serializer.data['email_address']).first()
+
+            existing_chat = Chat.objects.filter(participant__model_user = chat_user).filter(participant__model_user = request.user).first()
+
+            if email_serializer.data['email_address'] == request.user.email_address:
+
+                response_dict = {'detail': "Email provided cannot be the same as the authenticated user's."}
+
+                return Response(response_dict, status=status.HTTP_400_BAD_REQUEST)
+            
+            elif existing_chat:
+
+                response_dict = {'detail': 'This object already exists.'}
+
+                return Response(response_dict, status=status.HTTP_400_BAD_REQUEST)
+        
         chat_serializer = ChatSerializer(data=request.data)
 
         if chat_serializer.is_valid(raise_exception=True):
 
-            pass
+            new_chat = Chat.objects.create(**chat_serializer.data)
+
+            Participant.objects.create(model_user = request.user, chat = new_chat)
+            Participant.objects.create(model_user = chat_user, chat = new_chat)
+
+            chat_serializer = ChatSerializer(new_chat)
+
+            response_dict = {'new_chat': chat_serializer.data}
+
+            return Response(response_dict, status=status.HTTP_201_CREATED)

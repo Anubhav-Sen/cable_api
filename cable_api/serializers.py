@@ -61,7 +61,7 @@ class ParticipantingUserSerializer(serializers.ModelSerializer):
 
         fields = ['model_user'] 
 
-class ChatObjectSerializer(serializers.ModelSerializer):
+class ChatSerializer(serializers.ModelSerializer):
     """
     A class to:
       - Serialize the fields of the chat model into a python dictionary with an additional field containing chat participants.
@@ -78,12 +78,15 @@ class ChatObjectSerializer(serializers.ModelSerializer):
             'display_name',
             'participants'
         ]
+    
+    extra_kwargs = {
+            'participants': {'required': False, 'allow_null': True}
+        }
 
-class ChatDataSerializer(serializers.Serializer):
+class EmailSerializer(serializers.Serializer):
     """
     A class to:
-      - Serialize the field data passed to it into a python dictionary.
-      - Validate data passed to it.  
+      - Serialize the email passed to it into a python dictionary.
+      - Validate the email passed to it.  
     """
-    display_name = serializers.CharField(max_length=255, write_only=True, required=False, allow_blank=True, allow_null=True)
     email_address = serializers.EmailField(max_length=255, write_only=True, required=True)
