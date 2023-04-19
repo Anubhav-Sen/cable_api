@@ -333,15 +333,54 @@ class TestChatView(APITestCase):
 
         participants = [{'model_user': participant_one}, {'model_user': participant_two}]      
 
-        chat = {
+        chat_dict = {
             'id': self.chat_object.id,
             'display_name': self.chat_object.display_name,
             'participants': participants
         }
 
-        expected_response = {'chat': chat}
+        expected_response = {'chat': chat_dict}
 
         response = self.client.get(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_chat_view_PATCH(self):
+        """
+        A method to test the PATCH method of the "api/chats/chat_id" endpoint.
+        """
+        endpoint = reverse('chat', kwargs={'chat_id': self.chat_object.id})
+        
+        request_dict = {
+            'display_name': 'updated_name'
+        }
+
+        participant_one = {
+                'id': self.auth_user.id,
+                'user_name': self.auth_user.user_name,
+                'email_address': self.auth_user.email_address,
+                'profile_image': self.auth_user.profile_image.url,
+            }
+
+        participant_two = {
+            'id': self.test_user.id,
+            'user_name': self.test_user.user_name,
+            'email_address': self.test_user.email_address,
+            'profile_image': self.test_user.profile_image.url,
+        }
+
+        participants = [{'model_user': participant_one}, {'model_user': participant_two}]      
+
+        chat_dict = {
+            'id': self.chat_object.id,
+            'display_name': 'updated_name',
+            'participants': participants
+        }
+ 
+        expected_response = {'updated_chat': chat_dict}
+
+        response = self.client.patch(endpoint, request_dict, format='multipart', **self.auth_headers)
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))

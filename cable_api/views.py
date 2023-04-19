@@ -228,8 +228,8 @@ def chat_view(request, chat_id):
                 chat_serializer.validated_data.pop(key)
                     
         Chat.objects.filter(id = chat_id).update(**chat_serializer.validated_data)
-
-        updated_chat = get_user_model().objects.get(id = chat_id)       
+        
+        updated_chat = Chat.objects.get(id = chat_id)       
 
         chat_serializer = ChatSerializer(updated_chat)    
 
