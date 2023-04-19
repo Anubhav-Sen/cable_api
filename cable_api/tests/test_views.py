@@ -292,3 +292,56 @@ class TestChatsView(APITestCase):
         self.chat_factory.reset_sequence()
 
         shutil.rmtree('cable_api/tests/media')
+
+@override_settings(MEDIA_ROOT = 'cable_api/tests/media')
+class TestChatView(APITestCase):
+    """
+    A class to test the "api/chats/chat_id" endpoint.
+    """
+    def setUp(self):
+        """
+        A method to define the base setup for this test class.
+        """
+        self.auth_user = UserFactory.create()
+        self.test_user = UserFactory.create()
+        self.chat_object = ChatFactory.create()
+        self.participant_factory = ParticipantFactory
+        self.participant_factory(model_user = self.auth_user, chat = self.chat_object)
+        self.participant_factory(model_user = self.test_user, chat = self.chat_object)
+        self.auth_headers = get_auth_headers(self.client, self.auth_user)
+        self.maxDiff = None
+
+    def test_chat_view_GET(self):
+        """
+        A method to test the GET method of the "api/chats/chat_id" endpoint.
+        """
+        endpoint = reverse('chat', kwargs={'chat_id': self.chat_object.id})
+
+        participant_one = {
+                'id': self.auth_user.id,
+                'user_name': self.auth_user.user_name,
+                'email_address': self.auth_user.email_address,
+                'profile_image': self.auth_user.profile_image.url,
+            }
+
+        participant_two = {
+            'id': self.test_user.id,
+            'user_name': self.test_user.user_name,
+            'email_address': self.test_user.email_address,
+            'profile_image': self.test_user.profile_image.url,
+        }
+
+        participants = [{'model_user': participant_one}, {'model_user': participant_two}]      
+
+        chat = {
+            'id': self.chat_object.id,
+            'display_name': self.chat_object.display_name,
+            'participants': participants
+        }
+
+        expected_response = {'chat': chat}
+
+        response = self.client.get(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))

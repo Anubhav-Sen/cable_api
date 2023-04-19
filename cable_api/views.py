@@ -169,3 +169,26 @@ def chats_view(request):
         response_dict = {'new_chat': chat_serializer.data}
 
         return Response(response_dict, status=status.HTTP_201_CREATED)
+    
+@api_view(['GET', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated]) 
+def chat_view(request, chat_id):
+    """
+    A function that defines the "api/chat/chat_id" endpoint.
+    """
+    if request.method == 'GET':
+
+        chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+
+        if chat == None:
+
+            response_dict = {'detail': 'This object does not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+
+        chat_serializer = ChatSerializer(chat)
+
+        response_dict = {'chat': chat_serializer.data}
+
+        return Response(response_dict, status=status.HTTP_200_OK)
+    
