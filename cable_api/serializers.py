@@ -78,6 +78,10 @@ class ChatSerializer(serializers.ModelSerializer):
             'display_name',
             'participants'
         ]
+
+        extra_kwargs = {
+            'id':{'read_only': True, 'required': False, 'allow_null': True},
+            }
     
 class EmailSerializer(serializers.Serializer):
     """
