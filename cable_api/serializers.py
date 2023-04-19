@@ -67,7 +67,7 @@ class ChatSerializer(serializers.ModelSerializer):
       - Serialize the fields of the chat model into a python dictionary with an additional field containing chat participants.
       - Validate data passed to it.  
     """
-    participants = ParticipantingUserSerializer(many=True)
+    participants = ParticipantingUserSerializer(required=False, many=True)
     
     class Meta:
 
@@ -79,10 +79,6 @@ class ChatSerializer(serializers.ModelSerializer):
             'participants'
         ]
     
-    extra_kwargs = {
-            'participants': {'required': False, 'allow_null': True}
-        }
-
 class EmailSerializer(serializers.Serializer):
     """
     A class to:

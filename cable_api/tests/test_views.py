@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from django.test import override_settings
 from cable_api.factory import UserFactory, ChatFactory, ParticipantFactory
-from cable_api.serializers import UserSerializer
+from cable_api.serializers import UserSerializer, ChatSerializer
 from django.contrib.auth import get_user_model
 from cable_api.models import Chat, Participant
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -210,6 +210,7 @@ class TestChatsView(APITestCase):
         self.chat_factory = ChatFactory
         self.participant_factory = ParticipantFactory
         self.auth_user = self.user_factory.create()
+        self.test_user = self.user_factory.create()
         self.user_objects = self.user_factory.create_batch(5)
         self.chat_objects = self.chat_factory.create_batch(5)
         self.auth_headers = get_auth_headers(self.client, self.auth_user)
@@ -259,6 +260,28 @@ class TestChatsView(APITestCase):
         response = self.client.get(endpoint, **self.auth_headers)
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_chats_view_POST(self):
+        """
+        A method to test the POST method of the "api/chats" endpoint.
+        """ 
+        endpoint = reverse('chats')
+
+        request_dict = {
+            'display_name': 'test_chat',
+            'email_address': self.test_user.email_address
+        }
+
+        response = self.client.post(endpoint, request_dict, **self.auth_headers)
+
+        new_chat = Chat.objects.filter(display_name = 'test_chat').first()
+
+        chat_serializer = ChatSerializer(new_chat)
+
+        expected_response = {'new_chat': chat_serializer.data}
+
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
 
     def tearDown(self):
