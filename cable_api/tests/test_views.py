@@ -290,6 +290,7 @@ class TestChatsView(APITestCase):
         """
         self.user_factory.reset_sequence()
         self.chat_factory.reset_sequence()
+        self.participant_factory.reset_sequence()
 
         shutil.rmtree('cable_api/tests/media')
 
@@ -306,8 +307,8 @@ class TestChatView(APITestCase):
         self.test_user = UserFactory.create()
         self.chat_object = ChatFactory.create()
         self.participant_factory = ParticipantFactory
-        self.participant_factory(model_user = self.auth_user, chat = self.chat_object)
-        self.participant_factory(model_user = self.test_user, chat = self.chat_object)
+        self.participant_one = self.participant_factory(model_user = self.auth_user, chat = self.chat_object)
+        self.participant_two = self.participant_factory(model_user = self.test_user, chat = self.chat_object)
         self.auth_headers = get_auth_headers(self.client, self.auth_user)
         self.maxDiff = None
 
@@ -384,3 +385,33 @@ class TestChatView(APITestCase):
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_user_view_DELETE(self):
+        """
+        A method to test the DELETE method of the "api/chats/chat_id" endpoint.
+        """ 
+        endpoint = reverse('chat', kwargs={'chat_id': self.chat_object.id})
+
+        expected_response = {'detail': 'This object has been deleted.'}
+
+        response = self.client.delete(endpoint, **self.auth_headers)
+
+        chat = Chat.objects.filter(id = self.chat_object.id).first()
+
+        participant_one = Participant.objects.filter(id = self.participant_one.id).first()
+        
+        participant_two = Participant.objects.filter(id = self.participant_two.id).first()
+
+        self.assertEqual(None, chat)
+        self.assertEqual(None, participant_one)
+        self.assertEqual(None, participant_two)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def tearDown(self):
+        """
+        A method to delete data and revert the changes made using the setup method after each test run.
+        """
+        self.participant_factory.reset_sequence()
+
+        shutil.rmtree('cable_api/tests/media')

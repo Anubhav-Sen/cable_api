@@ -236,3 +236,29 @@ def chat_view(request, chat_id):
         response_dict = {'updated_chat': chat_serializer.data} 
     
         return Response(response_dict, status=status.HTTP_200_OK)   
+    
+    elif request.method == 'DELETE':
+
+        chat = Chat.objects.filter(id = chat_id).first()
+
+        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+
+        if chat == None:
+
+            response_dict = {'detail': 'This object does not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+        
+        if user_chat == None and chat != None:
+
+            response_dict = {'detail': 'Unauthorized to make changes to this object.'}
+
+            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)   
+        
+        user_chat.delete()
+
+        response_dict = {'detail': 'This object has been deleted.'}
+
+        return Response(response_dict, status=status.HTTP_200_OK)
+    
+    
