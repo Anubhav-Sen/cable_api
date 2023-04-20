@@ -141,7 +141,6 @@ class Message(models.Model):
     - The fields of the Message model.
     - The __str__ method for the chat model.
     """
-
     content = models.TextField();
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='chat')
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sender')
