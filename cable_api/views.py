@@ -3,8 +3,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from cable_api.models import Chat, Participant
-from cable_api.serializers import UserSerializer, UserUpdateSerializer, ChatSerializer, EmailSerializer
+from cable_api.models import Chat, Participant, Message
+from cable_api.serializers import UserSerializer, UserUpdateSerializer, ChatSerializer, MessageSerializer, EmailSerializer
 
 @api_view(['GET', 'POST'])
 def users_view(request):
@@ -44,7 +44,7 @@ def users_view(request):
 @permission_classes([IsAuthenticatedOrReadOnly])
 def user_view(request, user_id):
     """
-    A function that defines the methods of the "api/users/user_id" endpoint.
+    A function that defines the methods of the "api/users/user_id/" endpoint.
     """    
     if request.method == 'GET':
 
@@ -174,7 +174,7 @@ def chats_view(request):
 @permission_classes([IsAuthenticated]) 
 def chat_view(request, chat_id):
     """
-    A function that defines the "api/chats/chat_id" endpoint.
+    A function that defines the "api/chats/chat_id/" endpoint.
     """
     if request.method == 'GET':
         
@@ -259,7 +259,26 @@ def chat_view(request, chat_id):
 
         response_dict = {'detail': 'This object has been deleted.'}
 
-        return Response(response_dict, status=status.HTTP_200_OK)
-
+        return Response(response_dict, status=status.HTTP_200_OK)    
     
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])  
+def messages_view(request, chat_id):
+    """
+    A function that defines the "api/chats/chat_id/messages/" endpoint.
+    """
+    if request.method == 'GET':
+
+        messages = Message.objects.filter(chat__id = chat_id).all()
+
+        if messages == None:
+
+            response_dict = {'detail': 'These objects do not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+
+        message_serializer = MessageSerializer(messages, many=True)
         
+        response_dict = {'messages': message_serializer.data}
+
+        return Response(response_dict, status=status.HTTP_200_OK)

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from cable_api.models import Chat, Participant
+from cable_api.models import Chat, Participant, Message
 
 class UserSerializer(serializers.ModelSerializer):
     """
@@ -21,7 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
         ]
         
         extra_kwargs = {
-            'id':{'read_only': True},
+            'id':{'read_only': True, 'required': False, 'allow_null': True},
             'password': {'write_only': True}
             }
 
@@ -82,6 +82,28 @@ class ChatSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'id':{'read_only': True, 'required': False, 'allow_null': True},
             }
+        
+class MessageSerializer(serializers.ModelSerializer):
+    """
+    - Serialize the fields of the message model into a python dictionary.
+    - Validate data passed to it.  
+    """
+    class Meta:
+        model = Message
+        fields = [
+            'id',
+            'content',  
+            'chat',
+            'sender',
+            'date_created'
+        ]
+
+    extra_kwargs = {
+        'id':{'read_only': True, 'required': False, 'allow_null': True},
+        'chat':{'read_only': True, 'required': False, 'allow_null': True},
+        'sender':{'read_only': True, 'required': False, 'allow_null': True},
+        'date_created':{'read_only': True, 'required': False, 'allow_null': True},
+    }
     
 class EmailSerializer(serializers.Serializer):
     """
@@ -90,3 +112,4 @@ class EmailSerializer(serializers.Serializer):
       - Validate the email passed to it.  
     """
     email_address = serializers.EmailField(max_length=255, write_only=True, required=True)
+
