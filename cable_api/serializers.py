@@ -92,16 +92,16 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = [
             'id',
-            'content',  
+            'content',
+            'sender',  
             'chat',
-            'sender',
             'date_created'
         ]
 
     extra_kwargs = {
         'id':{'read_only': True, 'required': False, 'allow_null': True},
-        'chat':{'read_only': True, 'required': False, 'allow_null': True},
         'sender':{'read_only': True, 'required': False, 'allow_null': True},
+        'chat':{'read_only': True, 'required': False, 'allow_null': True},
         'date_created':{'read_only': True, 'required': False, 'allow_null': True},
     }
     
