@@ -174,7 +174,7 @@ def chats_view(request):
 @permission_classes([IsAuthenticated]) 
 def chat_view(request, chat_id):
     """
-    A function that defines the "api/chat/chat_id" endpoint.
+    A function that defines the "api/chats/chat_id" endpoint.
     """
     if request.method == 'GET':
         
@@ -260,5 +260,6 @@ def chat_view(request, chat_id):
         response_dict = {'detail': 'This object has been deleted.'}
 
         return Response(response_dict, status=status.HTTP_200_OK)
+
     
-    
+        
