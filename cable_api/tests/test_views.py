@@ -6,11 +6,12 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.test import override_settings
-from cable_api.factory import UserFactory, ChatFactory, ParticipantFactory
+from cable_api.factory import UserFactory, ChatFactory, ParticipantFactory, MessageFactory
 from cable_api.serializers import UserSerializer, ChatSerializer
 from django.contrib.auth import get_user_model
 from cable_api.models import Chat, Participant
 from django.core.files.uploadedfile import SimpleUploadedFile
+from datetime import datetime
 
 def get_auth_headers(client, user):
         """
@@ -429,8 +430,10 @@ class TestMessagesView(APITestCase):
         self.test_user = UserFactory.create()
         self.chat_object = ChatFactory.create()
         self.participant_factory = ParticipantFactory
+        self.message_factory = MessageFactory
         self.participant_one = self.participant_factory(model_user = self.auth_user, chat = self.chat_object)
         self.participant_two = self.participant_factory(model_user = self.test_user, chat = self.chat_object)
+        self.message_objects = self.message_factory.create_batch(5, sender = self.auth_user, chat = self.chat_object)
         self.auth_headers = get_auth_headers(self.client, self.auth_user)
         self.maxDiff = None
 
@@ -438,33 +441,34 @@ class TestMessagesView(APITestCase):
         """
         A method to test the GET method of the "api/chats/chat_id" endpoint.
         """
-        endpoint = reverse('chat', kwargs={'chat_id': self.chat_object.id})
+        endpoint = reverse('messages', kwargs={'chat_id': self.chat_object.id})
 
-        participant_one = {
-                'id': self.auth_user.id,
-                'user_name': self.auth_user.user_name,
-                'email_address': self.auth_user.email_address,
-                'profile_image': self.auth_user.profile_image.url,
+        messages = []
+
+        for message in self.message_objects:
+
+            message_dict = {
+                'id': message.id,
+                'content': message.content,
+                'sender': message.sender.id,  
+                'chat': message.chat.id,
+                'date_created': message.date_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             }
 
-        participant_two = {
-            'id': self.test_user.id,
-            'user_name': self.test_user.user_name,
-            'email_address': self.test_user.email_address,
-            'profile_image': self.test_user.profile_image.url,
-        }
+            messages.append(message_dict)
 
-        participants = [{'model_user': participant_one}, {'model_user': participant_two}]      
-
-        chat_dict = {
-            'id': self.chat_object.id,
-            'display_name': self.chat_object.display_name,
-            'participants': participants
-        }
-
-        expected_response = {'chat': chat_dict}
+        expected_response = {'messages': messages}
 
         response = self.client.get(endpoint, **self.auth_headers)
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
+
+    def tearDown(self):
+        """
+        A method to delete data and revert the changes made using the setup method after each test run.
+        """
+        self.participant_factory.reset_sequence()
+        self.message_factory.reset_sequence()
+
+        shutil.rmtree('cable_api/tests/media')
