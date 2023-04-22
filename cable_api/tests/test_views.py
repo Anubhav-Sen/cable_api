@@ -7,9 +7,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from django.test import override_settings
 from cable_api.factory import UserFactory, ChatFactory, ParticipantFactory, MessageFactory
-from cable_api.serializers import UserSerializer, ChatSerializer
+from cable_api.serializers import UserSerializer, ChatSerializer, MessageSerializer
 from django.contrib.auth import get_user_model
-from cable_api.models import Chat, Participant
+from cable_api.models import Chat, Participant, Message
 from django.core.files.uploadedfile import SimpleUploadedFile
 from datetime import datetime
 
@@ -430,9 +430,9 @@ class TestMessagesView(APITestCase):
         self.test_user = UserFactory.create()
         self.chat_object = ChatFactory.create()
         self.participant_factory = ParticipantFactory
-        self.message_factory = MessageFactory
         self.participant_one = self.participant_factory(model_user = self.auth_user, chat = self.chat_object)
         self.participant_two = self.participant_factory(model_user = self.test_user, chat = self.chat_object)
+        self.message_factory = MessageFactory
         self.message_objects = self.message_factory.create_batch(5, sender = self.auth_user, chat = self.chat_object)
         self.auth_headers = get_auth_headers(self.client, self.auth_user)
         self.maxDiff = None
@@ -462,6 +462,27 @@ class TestMessagesView(APITestCase):
         response = self.client.get(endpoint, **self.auth_headers)
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+    
+    def test_chat_view_POST(self):
+        """
+        A method to test the POST method of the "api/chats/chat_id" endpoint.
+        """
+        endpoint = reverse('messages', kwargs={'chat_id': self.chat_object.id})
+
+        request_dict = {
+            'content': 'test message',
+        }
+
+        response = self.client.post(endpoint, request_dict, **self.auth_headers)
+
+        new_message = Message.objects.filter(content = 'test message').first()
+
+        message_serializer = MessageSerializer(new_message)
+
+        expected_response = {'new_message': message_serializer.data}
+
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
 
     def tearDown(self):

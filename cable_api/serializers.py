@@ -90,6 +90,7 @@ class MessageSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Message
+
         fields = [
             'id',
             'content',
@@ -98,12 +99,12 @@ class MessageSerializer(serializers.ModelSerializer):
             'date_created'
         ]
 
-    extra_kwargs = {
-        'id':{'read_only': True, 'required': False, 'allow_null': True},
-        'sender':{'read_only': True, 'required': False, 'allow_null': True},
-        'chat':{'read_only': True, 'required': False, 'allow_null': True},
-        'date_created':{'read_only': True, 'required': False, 'allow_null': True},
-    }
+        extra_kwargs = {
+            'id':{'read_only': True, 'required': False, 'allow_null': True},
+            'sender':{'required': False, 'allow_null': True},
+            'chat':{'required': False, 'allow_null': True},
+            'date_created':{'read_only': True, 'required': False, 'allow_null': True},
+        }
     
 class EmailSerializer(serializers.Serializer):
     """

@@ -77,7 +77,7 @@ def user_view(request, user_id):
         
         elif request.user.id != user_id:
 
-            response_dict = {'detail': 'Unauthorized to make changes to this object.'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
             
@@ -153,7 +153,13 @@ def chats_view(request):
 
             return Response(response_dict, status=status.HTTP_400_BAD_REQUEST)
         
-        elif existing_chat:
+        if chat_user == None:
+            
+            response_dict = {'detail': 'This object does not exist.'}
+
+            return Response(response_dict, status=status.HTTP_400_BAD_REQUEST)
+
+        if existing_chat != None:
 
             response_dict = {'detail': 'This object already exists.'}
 
@@ -190,7 +196,7 @@ def chat_view(request, chat_id):
         
         if user_chat == None and chat != None:
 
-            response_dict = {'detail': 'Unauthorized to access this object.'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
            
@@ -217,7 +223,7 @@ def chat_view(request, chat_id):
         
         if user_chat == None and chat != None:
 
-            response_dict = {'detail': 'Unauthorized to access this object.'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
             
@@ -251,7 +257,7 @@ def chat_view(request, chat_id):
         
         if user_chat == None and chat != None:
 
-            response_dict = {'detail': 'Unauthorized to make changes to this object.'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)   
         
@@ -269,16 +275,57 @@ def messages_view(request, chat_id):
     """
     if request.method == 'GET':
 
-        messages = Message.objects.filter(chat__id = chat_id).all()
+        chat = Chat.objects.filter(id = chat_id).first()
+
+        messages = Message.objects.filter(chat = chat).first()
+
+        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+
+        user_messages = Message.objects.filter(chat = user_chat).all()
 
         if messages == None:
 
             response_dict = {'detail': 'These objects do not exist.'}
 
             return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+        
+        if user_messages == None and messages != None:
 
-        message_serializer = MessageSerializer(messages, many=True)
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+
+            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
+
+        message_serializer = MessageSerializer(user_messages, many=True)
         
         response_dict = {'messages': message_serializer.data}
 
         return Response(response_dict, status=status.HTTP_200_OK)
+
+    if request.method == 'POST':
+
+        message_serializer = MessageSerializer(data=request.data)
+        message_serializer.is_valid(raise_exception=True)
+
+        chat = Chat.objects.filter(id = chat_id).first()
+
+        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+
+        if chat == None:
+
+            response_dict = {'detail': 'This object does not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+        
+        if user_chat == None and chat != None:
+
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+
+            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
+        
+        new_message = Message.objects.create(sender = request.user, chat = user_chat, **message_serializer.validated_data)
+        
+        message_serializer = MessageSerializer(new_message)
+
+        response_dict = {'new_message': message_serializer.data}
+                                
+        return Response(response_dict, status=status.HTTP_201_CREATED)
