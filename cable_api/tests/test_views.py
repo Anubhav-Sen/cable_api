@@ -420,7 +420,7 @@ class TestChatView(APITestCase):
 @override_settings(MEDIA_ROOT = 'cable_api/tests/media')
 class TestMessagesView(APITestCase):
     """
-    A class to test the "api/chats/chat_id/messages" endpoint.
+    A class to test the "api/chats/chat_id/messages/" endpoint.
     """
     def setUp(self):
         """
@@ -437,9 +437,9 @@ class TestMessagesView(APITestCase):
         self.auth_headers = get_auth_headers(self.client, self.auth_user)
         self.maxDiff = None
 
-    def test_chat_view_GET(self):
+    def test_messages_view_GET(self):
         """
-        A method to test the GET method of the "api/chats/chat_id" endpoint.
+        A method to test the GET method of the "api/chats/chat_id/messages/" endpoint.
         """
         endpoint = reverse('messages', kwargs={'chat_id': self.chat_object.id})
 
@@ -464,9 +464,9 @@ class TestMessagesView(APITestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
     
-    def test_chat_view_POST(self):
+    def test_messages_view_POST(self):
         """
-        A method to test the POST method of the "api/chats/chat_id" endpoint.
+        A method to test the POST method of the "api/chats/chat_id/messages/" endpoint.
         """
         endpoint = reverse('messages', kwargs={'chat_id': self.chat_object.id})
 
@@ -491,5 +491,53 @@ class TestMessagesView(APITestCase):
         """
         self.participant_factory.reset_sequence()
         self.message_factory.reset_sequence()
+
+        shutil.rmtree('cable_api/tests/media')
+
+@override_settings(MEDIA_ROOT = 'cable_api/tests/media')
+class TestMessagesView(APITestCase):
+    """
+    A class to test the "api/chats/chat_id/messages/message_id/" endpoint.
+    """
+    def setUp(self):
+        """
+        A method to define the base setup for this test class.
+        """
+        self.auth_user = UserFactory.create()
+        self.test_user = UserFactory.create()
+        self.chat_object = ChatFactory.create()
+        self.participant_factory = ParticipantFactory
+        self.participant_one = self.participant_factory(model_user = self.auth_user, chat = self.chat_object)
+        self.participant_two = self.participant_factory(model_user = self.test_user, chat = self.chat_object)
+        self.message_object = MessageFactory.create(sender = self.auth_user, chat = self.chat_object)
+        self.auth_headers = get_auth_headers(self.client, self.auth_user)
+        self.maxDiff = None
+
+    def test_message_view_GET(self):
+        """
+        A method to test the GET method of the "api/chats/chat_id/messages/message_id/" endpoint.
+        """
+        endpoint = reverse('message', kwargs={'chat_id': self.chat_object.id, 'message_id': self.message_object.id})
+
+        message_dict = {
+            'id': self.message_object.id,
+            'content': self.message_object.content,
+            'sender': self.message_object.sender.id,  
+            'chat': self.message_object.chat.id,
+            'date_created': self.message_object.date_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        }
+
+        expected_response = {'message': message_dict}
+
+        response = self.client.get(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+    
+    def tearDown(self):
+        """
+        A method to delete data and revert the changes made using the setup method after each test run.
+        """
+        self.participant_factory.reset_sequence()
 
         shutil.rmtree('cable_api/tests/media')

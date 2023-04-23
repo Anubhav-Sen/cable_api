@@ -346,11 +346,11 @@ def message_view(request, chat_id, message_id):
 
         user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
 
-        message = Message.object.filter(message_id = message_id).first()
+        message = Message.objects.filter(id = message_id).first()
 
-        chat_message = Message.object.filter(chat = chat).filter(message_id = message_id).first()
+        chat_message = Message.objects.filter(chat = chat).filter(id = message_id).first()
 
-        user_chat_message = Message.objects.filter(chat = user_chat).filter(message_id = message_id).first()
+        user_chat_message = Message.objects.filter(chat = user_chat).filter(id = message_id).first()
         
         if chat == None:
 
