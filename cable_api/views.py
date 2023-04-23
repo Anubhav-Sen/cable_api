@@ -387,3 +387,112 @@ def message_view(request, chat_id, message_id):
         response_dict = {'message': message_serializer.data}
 
         return Response(response_dict, status=status.HTTP_200_OK)
+    
+    if request.method == 'PATCH':
+
+        message_serializer = MessageSerializer(data=request.data)
+        message_serializer.is_valid(raise_exception=True)
+
+        chat = Chat.objects.filter(id = chat_id).first()
+
+        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+
+        message = Message.objects.filter(id = message_id).first()
+
+        chat_message = Message.objects.filter(chat = chat).filter(id = message_id).first()
+
+        user_chat_message = Message.objects.filter(chat = user_chat).filter(id = message_id).first()
+
+        if chat == None:
+
+            response_dict = {'detail': 'This object does not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+        
+        if user_chat == None and chat != None:
+
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+
+            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if message == None:
+
+            response_dict = {'detail': 'These objects do not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+
+        if chat_message == None and message != None:
+
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+
+            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if user_chat_message == None and message != None:
+
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+
+            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
+        
+        for key, value in message_serializer.validated_data.copy().items():
+            
+            if value == None:
+
+                message_serializer.validated_data.pop(key)
+        
+        Message.objects.filter(id = message_id).update(**message_serializer.validated_data)
+        
+        updated_message = Message.objects.get(id = chat_id)       
+
+        message_serializer = MessageSerializer(updated_message)    
+
+        response_dict = {'updated_message': message_serializer.data} 
+    
+        return Response(response_dict, status=status.HTTP_200_OK)
+    
+    if request.method == 'DELETE':
+
+        chat = Chat.objects.filter(id = chat_id).first()
+
+        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+
+        message = Message.objects.filter(id = message_id).first()
+
+        chat_message = Message.objects.filter(chat = chat).filter(id = message_id).first()
+
+        user_chat_message = Message.objects.filter(chat = user_chat).filter(id = message_id).first()
+
+        if chat == None:
+
+            response_dict = {'detail': 'This object does not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+        
+        if user_chat == None and chat != None:
+
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+
+            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if message == None:
+
+            response_dict = {'detail': 'These objects do not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+
+        if chat_message == None and message != None:
+
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+
+            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if user_chat_message == None and message != None:
+
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+
+            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
+        
+        user_chat_message.delete()
+
+        response_dict = {'detail': 'This object has been deleted.'}
+
+        return Response(response_dict, status=status.HTTP_200_OK)    
