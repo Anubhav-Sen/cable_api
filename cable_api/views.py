@@ -336,7 +336,7 @@ def messages_view(request, chat_id):
     
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])  
-def messages_view(request, chat_id, message_id):
+def message_view(request, chat_id, message_id):
     """
     A function that defines the "api/chats/chat_id/messages/message_id/" endpoint.
     """
