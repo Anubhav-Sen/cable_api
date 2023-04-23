@@ -277,25 +277,29 @@ def messages_view(request, chat_id):
 
         chat = Chat.objects.filter(id = chat_id).first()
 
-        messages = Message.objects.filter(chat = chat).first()
-
         user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
 
-        user_messages = Message.objects.filter(chat = user_chat).all()
+        user_chat_messages = Message.objects.filter(chat = user_chat).all()
 
-        if messages == None:
+        if chat == None:
 
             response_dict = {'detail': 'These objects do not exist.'}
 
             return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
         
-        if user_messages == None and messages != None:
+        if user_chat == None and chat != None:
 
             response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
 
-        message_serializer = MessageSerializer(user_messages, many=True)
+        if user_chat_messages == None:
+
+            response_dict = {'detail': 'These objects do not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+            
+        message_serializer = MessageSerializer(user_chat_messages, many=True)
         
         response_dict = {'messages': message_serializer.data}
 
@@ -329,3 +333,57 @@ def messages_view(request, chat_id):
         response_dict = {'new_message': message_serializer.data}
                                 
         return Response(response_dict, status=status.HTTP_201_CREATED)
+    
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])  
+def messages_view(request, chat_id, message_id):
+    """
+    A function that defines the "api/chats/chat_id/messages/message_id/" endpoint.
+    """
+    if request.method == 'GET':
+
+        chat = Chat.objects.filter(id = chat_id).first()
+
+        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+
+        message = Message.object.filter(message_id = message_id).first()
+
+        chat_message = Message.object.filter(chat = chat).filter(message_id = message_id).first()
+
+        user_chat_message = Message.objects.filter(chat = user_chat).filter(message_id = message_id).first()
+        
+        if chat == None:
+
+            response_dict = {'detail': 'This object does not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+        
+        if user_chat == None and chat != None:
+
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+
+            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if message == None:
+
+            response_dict = {'detail': 'These objects do not exist.'}
+
+            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+
+        if chat_message == None and message != None:
+
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+
+            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
+        
+        if user_chat_message == None and message != None:
+
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+
+            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
+        
+        message_serializer = MessageSerializer(user_chat_message)
+
+        response_dict = {'message': message_serializer.data}
+
+        return Response(response_dict, status=status.HTTP_200_OK)
