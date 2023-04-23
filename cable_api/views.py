@@ -334,7 +334,7 @@ def messages_view(request, chat_id):
                                 
         return Response(response_dict, status=status.HTTP_201_CREATED)
     
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'PATCH', 'DELETE'])
 @permission_classes([IsAuthenticated])  
 def message_view(request, chat_id, message_id):
     """
@@ -441,7 +441,7 @@ def message_view(request, chat_id, message_id):
         
         Message.objects.filter(id = message_id).update(**message_serializer.validated_data)
         
-        updated_message = Message.objects.get(id = chat_id)       
+        updated_message = Message.objects.get(id = message_id)   
 
         message_serializer = MessageSerializer(updated_message)    
 

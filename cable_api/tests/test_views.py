@@ -533,6 +533,47 @@ class TestMessagesView(APITestCase):
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_message_view_PATCH(self):
+        """
+        A method to test the patch method of the "api/chats/chat_id/messages/message_id/" endpoint.
+        """
+        endpoint = reverse('message', kwargs={'chat_id': self.chat_object.id, 'message_id': self.message_object.id})
+
+        request_dict = {
+            'content': 'updated message'
+        }
+
+        message_dict = {
+            'id': self.message_object.id,
+            'content': 'updated message',
+            'sender': self.message_object.sender.id,  
+            'chat': self.message_object.chat.id,
+            'date_created': self.message_object.date_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        }
+
+        expected_response = {'updated_message': message_dict}
+
+        response = self.client.patch(endpoint, request_dict, **self.auth_headers)
+        
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_message_view_DELETE(self):
+        """
+        A method to test the delete method of the "api/chats/chat_id/messages/message_id/" endpoint.
+        """
+        endpoint = reverse('message', kwargs={'chat_id': self.chat_object.id, 'message_id': self.message_object.id})
+        
+        expected_response = {'detail': 'This object has been deleted.'}
+
+        response = self.client.delete(endpoint, **self.auth_headers)
+
+        message = Message.objects.filter(id = self.message_object.id).first()
+
+        self.assertEqual(None, message)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
     
     def tearDown(self):
         """
