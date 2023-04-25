@@ -143,9 +143,9 @@ def chats_view(request):
         chat_serializer = ChatSerializer(data=request.data)
         chat_serializer.is_valid(raise_exception=True)
 
-        chat_user = get_user_model().objects.filter(email_address = email_serializer.validated_data['email_address']).first()
+        chat_user = get_user_model().objects.filter(email_address = email_serializer.validated_data['email_address']).first() or None
 
-        existing_chat = Chat.objects.filter(participants__model_user = chat_user).filter(participants__model_user = request.user).first()
+        existing_chat = Chat.objects.filter(participants__model_user = chat_user).filter(participants__model_user = request.user).first() or None
 
         if email_serializer.validated_data['email_address'] == request.user.email_address:
 
@@ -184,9 +184,9 @@ def chat_view(request, chat_id):
     """
     if request.method == 'GET':
         
-        chat = Chat.objects.filter(id = chat_id).first()
+        chat = Chat.objects.filter(id = chat_id).first() or None
 
-        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first() or None
 
         if chat == None:
 
@@ -211,9 +211,9 @@ def chat_view(request, chat_id):
         chat_serializer = ChatSerializer(data=request.data)  
         chat_serializer.is_valid(raise_exception=True)
         
-        chat = Chat.objects.filter(id = chat_id).first()
+        chat = Chat.objects.filter(id = chat_id).first() or None
 
-        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first() or None
 
         if chat == None:
 
@@ -275,11 +275,11 @@ def messages_view(request, chat_id):
     """
     if request.method == 'GET':
 
-        chat = Chat.objects.filter(id = chat_id).first()
+        chat = Chat.objects.filter(id = chat_id).first() or None
 
-        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first() or None
 
-        user_chat_messages = Message.objects.filter(chat = user_chat).all()
+        user_chat_messages = Message.objects.filter(chat = user_chat).all() or None
 
         if chat == None:
 
@@ -310,9 +310,9 @@ def messages_view(request, chat_id):
         message_serializer = MessageSerializer(data=request.data)
         message_serializer.is_valid(raise_exception=True)
 
-        chat = Chat.objects.filter(id = chat_id).first()
+        chat = Chat.objects.filter(id = chat_id).first() or None
 
-        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first() or None
 
         if chat == None:
 
@@ -342,15 +342,15 @@ def message_view(request, chat_id, message_id):
     """
     if request.method == 'GET':
 
-        chat = Chat.objects.filter(id = chat_id).first()
+        chat = Chat.objects.filter(id = chat_id).first() or None
 
-        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first() or None
 
-        message = Message.objects.filter(id = message_id).first()
+        message = Message.objects.filter(id = message_id).first() or None
 
-        chat_message = Message.objects.filter(chat = chat).filter(id = message_id).first()
+        chat_message = Message.objects.filter(chat = chat).filter(id = message_id).first() or None
 
-        user_chat_message = Message.objects.filter(chat = user_chat).filter(id = message_id).first()
+        user_chat_message = Message.objects.filter(chat = user_chat).filter(id = message_id).first() or None
         
         if chat == None:
 
@@ -393,15 +393,15 @@ def message_view(request, chat_id, message_id):
         message_serializer = MessageSerializer(data=request.data)
         message_serializer.is_valid(raise_exception=True)
 
-        chat = Chat.objects.filter(id = chat_id).first()
+        chat = Chat.objects.filter(id = chat_id).first() or None
 
-        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first() or None
 
-        message = Message.objects.filter(id = message_id).first()
+        message = Message.objects.filter(id = message_id).first() or None
 
-        chat_message = Message.objects.filter(chat = chat).filter(id = message_id).first()
+        chat_message = Message.objects.filter(chat = chat).filter(id = message_id).first() or None
 
-        user_chat_message = Message.objects.filter(chat = user_chat).filter(id = message_id).first()
+        user_chat_message = Message.objects.filter(chat = user_chat).filter(id = message_id).first() or None
 
         if chat == None:
 
@@ -451,15 +451,15 @@ def message_view(request, chat_id, message_id):
     
     if request.method == 'DELETE':
 
-        chat = Chat.objects.filter(id = chat_id).first()
+        chat = Chat.objects.filter(id = chat_id).first() or None
 
-        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first()
+        user_chat = Chat.objects.filter(participants__model_user = request.user).filter(id = chat_id).first() or None
 
-        message = Message.objects.filter(id = message_id).first()
+        message = Message.objects.filter(id = message_id).first() or None
 
-        chat_message = Message.objects.filter(chat = chat).filter(id = message_id).first()
+        chat_message = Message.objects.filter(chat = chat).filter(id = message_id).first() or None
 
-        user_chat_message = Message.objects.filter(chat = user_chat).filter(id = message_id).first()
+        user_chat_message = Message.objects.filter(chat = user_chat).filter(id = message_id).first() or None
 
         if chat == None:
 
