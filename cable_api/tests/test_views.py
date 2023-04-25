@@ -615,7 +615,7 @@ class TestUserWhenObjectsDontExist(APITestCase):
 
     def test_user_GET(self):
         """
-        A method to test the GET method of the "api/users/user_id/" endpoint while no users exist.
+        A method to test the GET method of the "api/users/user_id/" endpoint while no user exist.
         """
         endpoint = reverse('user', kwargs={'user_id': '0'})
 
@@ -628,7 +628,7 @@ class TestUserWhenObjectsDontExist(APITestCase):
 
     def test_user_PATCH(self):
         """
-        A method to test the PATCH method of the "api/users/user_id/" endpoint while no users exist.
+        A method to test the PATCH method of the "api/users/user_id/" endpoint while no user exist.
         """
         endpoint = reverse('user', kwargs={'user_id': '0'})
 
@@ -641,7 +641,7 @@ class TestUserWhenObjectsDontExist(APITestCase):
 
     def test_user_DELETE(self):
         """
-        A method to test the DELETE method of the "api/users/user_id/" endpoint while no users exist.
+        A method to test the DELETE method of the "api/users/user_id/" endpoint while no user exist.
         """
         endpoint = reverse('user', kwargs={'user_id': '0'})
 
@@ -673,7 +673,7 @@ class TestChatsWhenObjectsDontExist(APITestCase):
 
     def test_chats_GET(self):
         """
-        A method to test the GET method of the "api/chats/" endpoint while no users exist.
+        A method to test the GET method of the "api/chats/" endpoint while no chats exist.
         """
         endpoint = reverse('chats')
 
@@ -686,7 +686,7 @@ class TestChatsWhenObjectsDontExist(APITestCase):
 
     def test_chats_POST(self):
         """
-        A method to test the POST method of the "api/chats/" endpoint while no users exist.
+        A method to test the POST method of the "api/chats/" endpoint while no chats exist.
         """
         endpoint = reverse('chats')
 
@@ -723,7 +723,7 @@ class TestChatWhenObjectsDontExist(APITestCase):
 
     def test_chat_GET(self):
         """
-        A method to test the GET method of the "api/chats/chat_id/" endpoint while no users exist.
+        A method to test the GET method of the "api/chats/chat_id/" endpoint while no chat exist.
         """
         endpoint = reverse('chat', kwargs={'chat_id': '0'})
 
@@ -736,7 +736,7 @@ class TestChatWhenObjectsDontExist(APITestCase):
     
     def test_chat_PATCH(self):
         """
-        A method to test the PATCH method of the "api/chats/chat_id/" endpoint while no users exist.
+        A method to test the PATCH method of the "api/chats/chat_id/" endpoint while no chat exist.
         """
         endpoint = reverse('chat', kwargs={'chat_id': '0'})
 
@@ -749,7 +749,7 @@ class TestChatWhenObjectsDontExist(APITestCase):
 
     def test_chat_DELETE(self):
         """
-        A method to test the DELETE method of the "api/chats/chat_id/" endpoint while no users exist.
+        A method to test the DELETE method of the "api/chats/chat_id/" endpoint while no chat exist.
         """
         endpoint = reverse('chat', kwargs={'chat_id': '0'})
 
@@ -760,6 +760,195 @@ class TestChatWhenObjectsDontExist(APITestCase):
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
 
+    def tearDown(self):
+        """
+        A method to delete data and revert the changes made using the setup method after each test run.
+        """
+        shutil.rmtree('cable_api/tests/media')
+
+@override_settings(MEDIA_ROOT = 'cable_api/tests/media')
+class TestMessagesWhenObjectsDontExist(APITestCase):
+    """
+    A class to test the "api/chats/chat_id/messages/" endpoint when required objects don't exist.
+    """
+    def setUp(self):
+        """
+        A method to define the base setup for this test class.
+        """
+        self.user_factory = UserFactory
+        self.chat_factory = ChatFactory
+        self.paticipant_factory = ParticipantFactory
+        self.auth_user = self.user_factory.create()
+        self.chat_object = self.chat_factory.create()
+        self.user_object = self.user_factory.create()
+        self.paticipant_factory.create(model_user = self.user_object, chat = self.chat_object)
+        self.paticipant_factory.create(model_user = self.auth_user, chat = self.chat_object)
+        self.auth_headers = get_auth_headers(self.client, self.auth_user)
+        self.maxDiff = None
+
+    def test_messages_GET_no_chat(self):
+        """
+        A method to test the GET method of the "api/chats/chat_id/messages/" endpoint while no chat exists.
+        """
+        endpoint = reverse('messages', kwargs={'chat_id': '0'})
+
+        expected_response = {'detail': 'These objects do not exist.'}
+
+        response = self.client.get(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_messages_GET_no_messages(self):
+        """
+        A method to test the GET method of the "api/chats/chat_id/messages/" endpoint while no messages exists.
+        """
+        endpoint = reverse('messages', kwargs={'chat_id': self.chat_object.id})
+
+        expected_response = {'detail': 'These objects do not exist.'}
+
+        response = self.client.get(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_messages_POST_no_chat(self):
+        """
+        A method to test the POST method of the "api/chats/chat_id/messages/" endpoint while no messages exists.
+        """
+        endpoint = reverse('messages', kwargs={'chat_id': '0'})
+
+        expected_response = {'detail': 'This object does not exist.'}
+
+        request_dict = {
+            'content': 'test message',
+        }
+
+        response = self.client.post(endpoint, request_dict, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+        
+    def tearDown(self):
+        """
+        A method to delete data and revert the changes made using the setup method after each test run.
+        """
+        shutil.rmtree('cable_api/tests/media')
+
+@override_settings(MEDIA_ROOT = 'cable_api/tests/media')
+class TestMessageWhenObjectsDontExist(APITestCase):
+    """
+    A class to test the "api/chats/chat_id/messages/message_id/" endpoint when required objects don't exist.
+    """
+    def setUp(self):
+        """
+        A method to define the base setup for this test class.
+        """
+        self.user_factory = UserFactory
+        self.chat_factory = ChatFactory
+        self.paticipant_factory = ParticipantFactory
+        self.auth_user = self.user_factory.create()
+        self.chat_object = self.chat_factory.create()
+        self.user_object = self.user_factory.create()
+        self.paticipant_factory.create(model_user = self.user_object, chat = self.chat_object)
+        self.paticipant_factory.create(model_user = self.auth_user, chat = self.chat_object)
+        self.auth_headers = get_auth_headers(self.client, self.auth_user)
+        self.maxDiff = None
+
+    def test_messages_GET_no_chat(self):
+        """
+        A method to test the GET method of the "api/chats/chat_id/messages/message_id/" endpoint while no chat exists.
+        """
+        endpoint = reverse('message', kwargs={'chat_id': '0', 'message_id': '0'})
+
+        expected_response = {'detail': 'This object does not exist.'}
+
+        response = self.client.get(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_messages_GET_no_messages(self):
+        """
+        A method to test the GET method of the "api/chats/chat_id/messages/message_id/" endpoint while no messages exists.
+        """
+        endpoint = reverse('message', kwargs={'chat_id': self.chat_object.id, 'message_id': '0'})
+
+        expected_response = {'detail': 'These objects do not exist.'}
+
+        response = self.client.get(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_messages_PATCH_no_chat(self):
+        """
+        A method to test the PATCH method of the "api/chats/chat_id/messages/message_id/" endpoint while no chat exists.
+        """
+        endpoint = reverse('message', kwargs={'chat_id': '0', 'message_id': '0'})
+
+        expected_response = {'detail': 'This object does not exist.'}
+
+        request_dict = {
+            'content': 'test message',
+        }
+
+        response = self.client.patch(endpoint, request_dict, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+    
+    def test_messages_PATCH_no_message(self):
+        """
+        A method to test the PATCH method of the "api/chats/chat_id/messages/message_id/" endpoint while no chat exists.
+        """
+        endpoint = reverse('message', kwargs={'chat_id': self.chat_object.id, 'message_id': '0'})
+
+        expected_response = {'detail': 'This object does not exist.'}
+
+        request_dict = {
+            'content': 'test message',
+        }
+
+        response = self.client.patch(endpoint, request_dict, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_messages_DELETE_no_chat(self):
+        """
+        A method to test the DELETE method of the "api/chats/chat_id/messages/message_id/" endpoint while no chat exists.
+        """
+        endpoint = reverse('message', kwargs={'chat_id': '0', 'message_id': '0'})
+
+        expected_response = {'detail': 'This object does not exist.'}
+
+        request_dict = {
+            'content': 'test message',
+        }
+
+        response = self.client.delete(endpoint, request_dict, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+    
+    def test_messages_DELETE_no_message(self):
+        """
+        A method to test the DELETE method of the "api/chats/chat_id/messages/message_id/" endpoint while no chat exists.
+        """
+        endpoint = reverse('message', kwargs={'chat_id': self.chat_object.id, 'message_id': '0'})
+
+        expected_response = {'detail': 'This object does not exist.'}
+
+        request_dict = {
+            'content': 'test message',
+        }
+
+        response = self.client.delete(endpoint, request_dict, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+        
     def tearDown(self):
         """
         A method to delete data and revert the changes made using the setup method after each test run.

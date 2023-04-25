@@ -417,7 +417,7 @@ def message_view(request, chat_id, message_id):
         
         if message == None:
 
-            response_dict = {'detail': 'These objects do not exist.'}
+            response_dict = {'detail': 'This object does not exist.'}
 
             return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
 
@@ -475,7 +475,7 @@ def message_view(request, chat_id, message_id):
         
         if message == None:
 
-            response_dict = {'detail': 'These objects do not exist.'}
+            response_dict = {'detail': 'This object does not exist.'}
 
             return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
 
