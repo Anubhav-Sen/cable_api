@@ -112,7 +112,7 @@ class TestUsersView(APITestCase):
         A method to delete data and revert the changes made using the setup method after each test run.
         """
         self.user_factory.reset_sequence()
-
+        
         shutil.rmtree('cable_api/tests/media')
 
 @override_settings(MEDIA_ROOT = 'cable_api/tests/media')
@@ -582,3 +582,71 @@ class TestMessagesView(APITestCase):
         self.participant_factory.reset_sequence()
 
         shutil.rmtree('cable_api/tests/media')
+
+class TestUsersWhenObjectsDontExist(APITestCase):
+    """
+    A class to test the "api/users/" endpoint when required objects don't exist.
+    """
+    def test_users_GET(self):
+        """
+        A method to test the GET method of the "api/users/" endpoint while no users exist.
+        """
+        endpoint = reverse('users')
+
+        expected_response = {'detail': 'These objects do not exist.'}
+
+        response = self.client.get(endpoint)
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+class TestUserWhenObjectsDontExist(APITestCase):
+    """
+    A class to test the "api/users/user_id/" endpoint when required objects don't exist.
+    """
+    def setUp(self):
+        """
+        A method to define the base setup for this test class.
+        """
+        self.auth_user = UserFactory.create()
+        self.auth_headers = get_auth_headers(self.client, self.auth_user)
+        self.maxDiff = None
+
+    def test_users_GET(self):
+        """
+        A method to test the GET method of the "api/users/user_id" endpoint while no users exist.
+        """
+        endpoint = reverse('user', kwargs={'user_id': '0'})
+
+        expected_response = {'detail': 'This object does not exist.'}
+
+        response = self.client.get(endpoint)
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_user_PATCH(self):
+        """
+        A method to test the PATCH method of the "api/users/user_id" endpoint while no users exist.
+        """
+        endpoint = reverse('user', kwargs={'user_id': '0'})
+
+        expected_response = {'detail': 'This object does not exist.'}
+
+        response = self.client.patch(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_user_DELETE(self):
+        """
+        A method to test the DELETE method of the "api/users/user_id" endpoint while no users exist.
+        """
+        endpoint = reverse('user', kwargs={'user_id': '0'})
+
+        expected_response = {'detail': 'This object does not exist.'}
+
+        response = self.client.delete(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))

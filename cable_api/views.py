@@ -13,7 +13,7 @@ def users_view(request):
     """
     if request.method == 'GET':
 
-        users = get_user_model().objects.all()
+        users = get_user_model().objects.all() or None
 
         if users == None:
 
@@ -48,7 +48,7 @@ def user_view(request, user_id):
     """    
     if request.method == 'GET':
 
-        user = get_user_model().objects.filter(id = user_id).first()
+        user = get_user_model().objects.filter(id = user_id).first() or None
 
         if user == None:
 
@@ -67,10 +67,10 @@ def user_view(request, user_id):
         user_update_serializer = UserUpdateSerializer(data=request.data)  
         user_update_serializer.is_valid(raise_exception=True)
         
-        user = get_user_model().objects.filter(id = user_id).first()
+        user = get_user_model().objects.filter(id = user_id).first() or None
 
         if user == None:
-
+ 
             response_dict = {'detail': 'This object does not exist.'}
 
             return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
@@ -99,7 +99,7 @@ def user_view(request, user_id):
     
     elif request.method == 'DELETE':
 
-        user = get_user_model().objects.filter(id = user_id).first()
+        user = get_user_model().objects.filter(id = user_id).first() or None
 
         if user == None:
 
@@ -121,7 +121,7 @@ def chats_view(request):
     """
     if request.method == 'GET':
 
-        chats = Chat.objects.filter(participants__model_user = request.user).all()
+        chats = Chat.objects.filter(participants__model_user = request.user).all() or None
 
         if chats == None:
 
