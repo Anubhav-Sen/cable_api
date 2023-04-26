@@ -900,7 +900,7 @@ class TestMessageWhenObjectsDontExist(APITestCase):
         self.auth_headers = get_auth_headers(self.client, self.auth_user)
         self.maxDiff = None
 
-    def test_messages_GET_no_chat(self):
+    def test_message_GET_no_chat(self):
         """
         A method to test the GET method of the "api/chats/chat_id/messages/message_id/" endpoint while no chat exists.
         """
@@ -913,7 +913,7 @@ class TestMessageWhenObjectsDontExist(APITestCase):
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
 
-    def test_messages_GET_no_messages(self):
+    def test_message_GET_no_message(self):
         """
         A method to test the GET method of the "api/chats/chat_id/messages/message_id/" endpoint while no messages exists.
         """
@@ -926,7 +926,7 @@ class TestMessageWhenObjectsDontExist(APITestCase):
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
 
-    def test_messages_PATCH_no_chat(self):
+    def test_message_PATCH_no_chat(self):
         """
         A method to test the PATCH method of the "api/chats/chat_id/messages/message_id/" endpoint while no chat exists.
         """
@@ -943,7 +943,7 @@ class TestMessageWhenObjectsDontExist(APITestCase):
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
     
-    def test_messages_PATCH_no_message(self):
+    def test_message_PATCH_no_message(self):
         """
         A method to test the PATCH method of the "api/chats/chat_id/messages/message_id/" endpoint while no chat exists.
         """
@@ -960,7 +960,7 @@ class TestMessageWhenObjectsDontExist(APITestCase):
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
 
-    def test_messages_DELETE_no_chat(self):
+    def test_message_DELETE_no_chat(self):
         """
         A method to test the DELETE method of the "api/chats/chat_id/messages/message_id/" endpoint while no chat exists.
         """
@@ -977,7 +977,7 @@ class TestMessageWhenObjectsDontExist(APITestCase):
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
     
-    def test_messages_DELETE_no_message(self):
+    def test_message_DELETE_no_message(self):
         """
         A method to test the DELETE method of the "api/chats/chat_id/messages/message_id/" endpoint while no chat exists.
         """
