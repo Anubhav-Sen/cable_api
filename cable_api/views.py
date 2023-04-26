@@ -196,7 +196,7 @@ def chat_view(request, chat_id):
         
         if user_chat == None and chat != None:
 
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
            
@@ -223,7 +223,7 @@ def chat_view(request, chat_id):
         
         if user_chat == None and chat != None:
 
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
             
@@ -257,7 +257,7 @@ def chat_view(request, chat_id):
         
         if user_chat == None and chat != None:
 
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)   
         
@@ -289,7 +289,7 @@ def messages_view(request, chat_id):
         
         if user_chat == None and chat != None:
 
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -322,7 +322,7 @@ def messages_view(request, chat_id):
         
         if user_chat == None and chat != None:
 
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
         
@@ -360,25 +360,19 @@ def message_view(request, chat_id, message_id):
         
         if user_chat == None and chat != None:
 
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
         
         if message == None:
 
-            response_dict = {'detail': 'These objects do not exist.'}
+            response_dict = {'detail': 'This object does not exist.'}
 
             return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
-
-        if chat_message == None and message != None:
-
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
-
-            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
         
         if user_chat_message == None and message != None:
 
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
         
@@ -411,7 +405,7 @@ def message_view(request, chat_id, message_id):
         
         if user_chat == None and chat != None:
 
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
         
@@ -420,16 +414,10 @@ def message_view(request, chat_id, message_id):
             response_dict = {'detail': 'This object does not exist.'}
 
             return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
-
-        if chat_message == None and message != None:
-
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
-
-            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
         
         if user_chat_message == None and message != None:
 
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
         
@@ -469,7 +457,7 @@ def message_view(request, chat_id, message_id):
         
         if user_chat == None and chat != None:
 
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
         
@@ -478,16 +466,10 @@ def message_view(request, chat_id, message_id):
             response_dict = {'detail': 'This object does not exist.'}
 
             return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
-
-        if chat_message == None and message != None:
-
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
-
-            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
         
         if user_chat_message == None and message != None:
 
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object'}
+            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
 
             return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
         

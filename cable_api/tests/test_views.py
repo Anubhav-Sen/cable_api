@@ -125,6 +125,7 @@ class TestUserView(APITestCase):
         A method to define the base setup for this test class.
         """
         self.auth_user = UserFactory.create()
+        self.user_object = UserFactory.create()
         self.auth_headers = get_auth_headers(self.client, self.auth_user)
         self.maxDiff = None
 
@@ -175,7 +176,7 @@ class TestUserView(APITestCase):
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
-    
+        
     def test_user_view_DELETE(self):
         """
         A method to test the DELETE method of the "api/users/user_id/" endpoint.
@@ -285,6 +286,47 @@ class TestChatsView(APITestCase):
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
 
+    def test_chats_view_POST_same_email_as_auth_user(self):
+        """
+        A method to test the POST method of the "api/chats/" endpoint when the email passed in is the same as the authenticated user.
+        """ 
+        endpoint = reverse('chats')
+
+        request_dict = {
+            'display_name': 'test_chat',
+            'email_address': self.auth_user.email_address
+        }
+
+        response = self.client.post(endpoint, request_dict, **self.auth_headers)
+
+        expected_response = {'detail': "Email provided cannot be the same as the authenticated user's."}
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_chats_view_POST_while_chat_already_exists(self):
+        """
+        A method to test the POST method of the "api/chats/" endpoint when the chat being created already exists.
+        """ 
+        endpoint = reverse('chats')
+
+        chat_object = self.chat_factory.create()
+
+        self.participant_factory(model_user = self.auth_user, chat = chat_object)
+        self.participant_factory(model_user = self.test_user, chat = chat_object)
+
+        request_dict = {
+            'display_name': 'test_chat',
+            'email_address': self.test_user.email_address
+        }
+
+        response = self.client.post(endpoint, request_dict, **self.auth_headers)
+
+        expected_response = {'detail': 'This object already exists.'}
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+    
     def tearDown(self):
         """
         A method to delete data and revert the changes made using the setup method after each test run.
@@ -304,9 +346,12 @@ class TestChatView(APITestCase):
         """
         A method to define the base setup for this test class.
         """
-        self.auth_user = UserFactory.create()
-        self.test_user = UserFactory.create()
-        self.chat_object = ChatFactory.create()
+
+        self.user_factory = UserFactory
+        self.chat_factory = ChatFactory
+        self.auth_user = self.user_factory.create()
+        self.test_user = self.user_factory.create()
+        self.chat_object = self.chat_factory.create()
         self.participant_factory = ParticipantFactory
         self.participant_one = self.participant_factory(model_user = self.auth_user, chat = self.chat_object)
         self.participant_two = self.participant_factory(model_user = self.test_user, chat = self.chat_object)
@@ -320,10 +365,10 @@ class TestChatView(APITestCase):
         endpoint = reverse('chat', kwargs={'chat_id': self.chat_object.id})
 
         participant_one = {
-                'id': self.auth_user.id,
-                'user_name': self.auth_user.user_name,
-                'email_address': self.auth_user.email_address,
-                'profile_image': self.auth_user.profile_image.url,
+            'id': self.auth_user.id,
+            'user_name': self.auth_user.user_name,
+            'email_address': self.auth_user.email_address,
+            'profile_image': self.auth_user.profile_image.url,
             }
 
         participant_two = {
@@ -463,7 +508,7 @@ class TestMessagesView(APITestCase):
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
-    
+           
     def test_messages_view_POST(self):
         """
         A method to test the POST method of the "api/chats/chat_id/messages/" endpoint.
@@ -874,7 +919,7 @@ class TestMessageWhenObjectsDontExist(APITestCase):
         """
         endpoint = reverse('message', kwargs={'chat_id': self.chat_object.id, 'message_id': '0'})
 
-        expected_response = {'detail': 'These objects do not exist.'}
+        expected_response = {'detail': 'This object does not exist.'}
 
         response = self.client.get(endpoint, **self.auth_headers)
 
@@ -949,6 +994,282 @@ class TestMessageWhenObjectsDontExist(APITestCase):
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
         
+    def tearDown(self):
+        """
+        A method to delete data and revert the changes made using the setup method after each test run.
+        """
+        shutil.rmtree('cable_api/tests/media')
+
+@override_settings(MEDIA_ROOT = 'cable_api/tests/media')
+class TestUserAgainstUnauthorizedUser(APITestCase):
+    """
+    A class to test the "api/users/user_id/" endpoint against an unauthorized user.
+    """
+    def setUp(self):
+        """
+        A method to define the base setup for this test class.
+        """
+        self.user_factory = UserFactory
+        self.auth_user = self.user_factory.create()
+        self.user_object = self.user_factory.create()
+        self.auth_headers = get_auth_headers(self.client, self.auth_user)
+        self.maxDiff = None
+
+    def test_user_view_PATCH_unauthorized_user(self):
+        """
+        A method to test the PATCH method of the "api/users/user_id/" on a protected user without correct credentials.
+        """ 
+        endpoint = reverse('user', kwargs={'user_id': self.user_object.id})
+        
+        expected_response = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
+
+        response = self.client.patch(endpoint, format='multipart', **self.auth_headers)
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def tearDown(self):
+        """
+        A method to delete data and revert the changes made using the setup method after each test run.
+        """
+        shutil.rmtree('cable_api/tests/media')
+
+@override_settings(MEDIA_ROOT = 'cable_api/tests/media')
+class TestChatsAgainstUnauthorizedUser(APITestCase):
+    """
+    A class to test the "api/chats/chat_id/" endpoint against an unauthorized user.
+    """
+    def setUp(self):
+        """
+        A method to define the base setup for this test class.
+        """
+        self.user_factory = UserFactory
+        self.chat_factory = ChatFactory
+        self.participant_factory = ParticipantFactory
+        self.auth_user = self.user_factory.create()
+        self.test_user_1 = self.user_factory.create()
+        self.test_user_2 = self.user_factory.create()
+        self.chat_object = self.chat_factory.create()
+        self.participant_factory(model_user = self.test_user_1, chat = self.chat_object)
+        self.participant_factory(model_user = self.test_user_2, chat = self.chat_object)
+        self.auth_headers = get_auth_headers(self.client, self.auth_user)
+        self.maxDiff = None
+
+    def test_chat_view_GET_unauthorized_user(self):
+        """
+        A method to test the GET method of the "api/chats/chat_id/" on a protected chat without correct credentials.
+        """ 
+        endpoint = reverse('chat', kwargs={'chat_id': self.chat_object.id})
+        
+        expected_response = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
+
+        response = self.client.get(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_chat_view_PATCH_unauthorized_user(self):
+        """
+        A method to test the PATCH method of the "api/chats/chat_id/" on a protected chat without correct credentials.
+        """ 
+        endpoint = reverse('chat', kwargs={'chat_id': self.chat_object.id})
+        
+        expected_response = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
+
+        response = self.client.patch(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_chat_view_DELETE_unauthorized_user(self):
+        """
+        A method to test the DELETE method of the "api/chats/chat_id/" on a protected chat without correct credentials.
+        """ 
+        endpoint = reverse('chat', kwargs={'chat_id': self.chat_object.id})
+        
+        expected_response = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
+
+        response = self.client.delete(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def tearDown(self):
+        """
+        A method to delete data and revert the changes made using the setup method after each test run.
+        """
+        shutil.rmtree('cable_api/tests/media')
+
+@override_settings(MEDIA_ROOT = 'cable_api/tests/media')
+class TestMessagesAgainstUnauthorizedUser(APITestCase):
+    """
+    A class to test the "api/chats/chat_id/messages" endpoint against an unauthorized user.
+    """
+    def setUp(self):
+        """
+        A method to define the base setup for this test class.
+        """
+        self.user_factory = UserFactory
+        self.chat_factory = ChatFactory
+        self.participant_factory = ParticipantFactory
+        self.auth_user = self.user_factory.create()
+        self.test_user_1 = self.user_factory.create()
+        self.test_user_2 = self.user_factory.create()
+        self.chat_object = self.chat_factory.create()
+        self.participant_factory(model_user = self.test_user_1, chat = self.chat_object)
+        self.participant_factory(model_user = self.test_user_2, chat = self.chat_object)
+        self.auth_headers = get_auth_headers(self.client, self.auth_user)
+        self.maxDiff = None
+
+    def test_messages_view_GET_unauthorized_user(self):
+        """
+        A method to test the GET method of the "api/chats/chat_id/messages" on protected messages without correct credentials.
+        """ 
+        endpoint = reverse('messages', kwargs={'chat_id': self.chat_object.id})
+            
+        expected_response = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
+
+        response = self.client.get(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_messages_view_POST_unauthorized_user(self):
+        """
+        A method to test the POST method of the "api/chats/chat_id/messages" on protected messages without correct credentials.
+        """ 
+        endpoint = reverse('messages', kwargs={'chat_id': self.chat_object.id})
+
+        request_dict = {
+            'content': 'test message'
+        }
+            
+        expected_response = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
+
+        response = self.client.post(endpoint, request_dict, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def tearDown(self):
+        """
+        A method to delete data and revert the changes made using the setup method after each test run.
+        """
+        shutil.rmtree('cable_api/tests/media')
+
+@override_settings(MEDIA_ROOT = 'cable_api/tests/media')
+class TestMessageAgainstUnauthorizedUser(APITestCase):
+    """
+    A class to test the "api/chats/chat_id/messages/message_id" endpoint against an unauthorized user.
+    """
+    def setUp(self):
+        """
+        A method to define the base setup for this test class.
+        """
+        self.user_factory = UserFactory
+        self.chat_factory = ChatFactory
+        self.participant_factory = ParticipantFactory
+        self.message_factory = MessageFactory
+        self.auth_user = self.user_factory.create()
+        self.test_user_1 = self.user_factory.create()
+        self.test_user_2 = self.user_factory.create()
+        self.chat_object_1 = self.chat_factory.create()
+        self.participant_factory(model_user = self.test_user_1, chat = self.chat_object_1)
+        self.participant_factory(model_user = self.test_user_2, chat = self.chat_object_1)
+        self.chat_object_2 = self.chat_factory.create()
+        self.participant_factory(model_user = self.auth_user, chat = self.chat_object_2)
+        self.participant_factory(model_user = self.test_user_1, chat = self.chat_object_2)
+        self.message_1 = self.message_factory.create(sender = self.test_user_1, chat=self.chat_object_1)
+        self.message_2 = self.message_factory.create(sender = self.test_user_1, chat=self.chat_object_2)
+        self.auth_headers = get_auth_headers(self.client, self.auth_user)
+        self.maxDiff = None
+    
+    def test_message_view_GET_unauthorized_user_chat(self):
+        """
+        A method to test the GET method of the "api/chats/chat_id/messages/message_id" on protected message without correct credentials to access the parent chat.
+        """ 
+        endpoint = reverse('message', kwargs={'chat_id': self.chat_object_1.id, 'message_id': self.message_1.id})
+            
+        expected_response = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
+
+        response = self.client.get(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_message_view_GET_unauthorized_user_message(self):
+        """
+        A method to test the GET method of the "api/chats/chat_id/messages/message_id" on protected message without correct credentials.
+        """ 
+        endpoint = reverse('message', kwargs={'chat_id': self.chat_object_1.id, 'message_id': self.message_1.id})
+            
+        expected_response = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
+
+        response = self.client.get(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+    
+    def test_message_view_PATCH_unauthorized_user_chat(self):
+        """
+        A method to test the PATCH method of the "api/chats/chat_id/messages/message_id" on protected message without correct credentials to access the parent chat.
+        """ 
+        endpoint = reverse('message', kwargs={'chat_id': self.chat_object_1.id, 'message_id': self.message_1.id})
+
+        request_dict = {
+            'content': 'test message'
+        }   
+
+        expected_response = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
+
+        response = self.client.patch(endpoint, request_dict, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_message_view_PATCH_unauthorized_user_message(self):
+        """
+        A method to test the PATCH method of the "api/chats/chat_id/messages/message_id" on protected message without correct credentials.
+        """ 
+        endpoint = reverse('message', kwargs={'chat_id': self.chat_object_1.id, 'message_id': self.message_1.id})
+            
+        request_dict = {
+            'content': 'test message'
+        }   
+
+        expected_response = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
+
+        response = self.client.patch(endpoint, request_dict, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_message_view_DELETE_unauthorized_user_chat(self):
+        """
+        A method to test the DELETE method of the "api/chats/chat_id/messages/message_id" on protected message without correct credentials to access the parent chat.
+        """ 
+        endpoint = reverse('message', kwargs={'chat_id': self.chat_object_1.id, 'message_id': self.message_1.id})
+            
+        expected_response = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
+
+        response = self.client.delete(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
+    def test_message_view_DELETE_unauthorized_user_message(self):
+        """
+        A method to test the DELETE method of the "api/chats/chat_id/messages/message_id" on protected message without correct credentials.
+        """ 
+        endpoint = reverse('message', kwargs={'chat_id': self.chat_object_1.id, 'message_id': self.message_1.id})
+            
+        expected_response = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
+
+        response = self.client.delete(endpoint, **self.auth_headers)
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
     def tearDown(self):
         """
         A method to delete data and revert the changes made using the setup method after each test run.
