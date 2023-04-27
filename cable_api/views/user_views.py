@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from cable_api.serializers import UserSerializer, UserUpdateSerializer
-from cable_api.views.view_helpers import get_object_list_or_404, get_object_or_404, check_user_object_perms, clean_serializer_data
+from cable_api.views.view_helpers import *
 
 @api_view(['GET', 'POST'])
 def users_view(request):
@@ -56,6 +56,7 @@ def user_view(request, user_id):
         user_update_serializer.is_valid(raise_exception=True)
         
         user = get_object_or_404(get_user_model(), id = user_id)
+        
         check_user_object_perms(user, request.user)
              
         update_data = clean_serializer_data(user_update_serializer.validated_data)

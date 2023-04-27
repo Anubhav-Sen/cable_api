@@ -188,7 +188,7 @@ class TestChatsWhenObjectsDontExist(APITestCase):
 
         response = self.client.post(endpoint, request_dict, **self.auth_headers)
 
-        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
 
     def tearDown(self):

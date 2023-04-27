@@ -1,4 +1,5 @@
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ParseError
+from cable_api.models import Chat
 from cable_api.exceptions import Unauthorized
 
 def get_object_list_or_404(model, **filters):
@@ -37,7 +38,7 @@ def check_user_object_perms(obj, auth_user):
 
         raise Unauthorized('Unauthorized to use this method on this endpoint or object.')
     
-def check_object_perms(obj, *user_filter):
+def check_object_perms(obj, **user_filter):
     """
     A function that:
     - Query's the model of the object passed to it with its object id as a filter.
@@ -46,13 +47,12 @@ def check_object_perms(obj, *user_filter):
     """
     model = type(obj)
 
-    obj_filtered_by_user = model.objects.filter(id = obj.id).filter(*user_filter).first()
+    obj_filtered_by_user = model.objects.filter(id = obj.id).filter(**user_filter).first()
 
     if not obj_filtered_by_user:
 
         raise Unauthorized('Unauthorized to use this method on this endpoint or object.')
     
-
 def clean_serializer_data(data):
     """
     A function that:
@@ -70,3 +70,21 @@ def clean_serializer_data(data):
             data.pop(key)
 
     return data
+
+def check_chat_exists(chat_user, auth_user):
+    """
+    A function that query's the chat model with the chat user and auth user objects to check if a chat with those users already exists.
+    """
+    existing_chat = Chat.objects.filter(participants__model_user = chat_user).filter(participants__model_user = auth_user).first()
+
+    if existing_chat:
+
+        raise ParseError('This object already exists.')
+
+def compare_email(email, auth_user_email):
+    """
+    A function that compares the email addres passed to it to the email addres of the authenticated user.
+    """
+    if email == auth_user_email:
+
+        raise ParseError("Email provided cannot be the same as the authenticated user's.")
