@@ -2,37 +2,9 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
 from django.contrib.auth import get_user_model
 from cable_api.serializers import UserSerializer, UserUpdateSerializer
-
-def get_object_list_or_404(model, **filters):
-    """
-    A function that:
-    - Query's a model for a list of objects with the given filter arguments.
-    - Returns the list of objects if they exist and raises an exception if they dont.
-    """ 
-    obj_list = model.objects.filter(**filters).all()
-        
-    if not obj_list: 
-
-        raise NotFound('These objects do not exist.')
-    
-    return obj_list
-
-def get_object_or_404(model, **filters):
-    """
-    A function that:
-    - Query's a model for a object with the given filter arguments.
-    - Returns the object if it exists and raises an exception if is doesn't.
-    """
-    obj = model.objects.filter(**filters).first()
-        
-    if not obj: 
-
-        raise NotFound('This object does not exist.')
-    
-    return obj
+from cable_api.views.view_helpers import get_object_list_or_404, get_object_or_404
         
 @api_view(['GET', 'POST'])
 def users_view(request):

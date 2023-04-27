@@ -7,7 +7,7 @@ from django.test import override_settings
 from cable_api.factory import UserFactory
 from cable_api.serializers import UserSerializer
 from django.contrib.auth import get_user_model
-from cable_api.tests.helpers import get_auth_headers, create_temp_image
+from cable_api.tests.test_helpers import get_auth_headers, create_temp_image
 
 @override_settings(MEDIA_ROOT = 'cable_api/tests/media')
 class TestUsersView(APITestCase):

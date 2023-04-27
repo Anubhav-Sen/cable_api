@@ -7,7 +7,7 @@ from django.test import override_settings
 from cable_api.factory import UserFactory, ChatFactory, ParticipantFactory, MessageFactory
 from cable_api.serializers import  MessageSerializer
 from cable_api.models import Message
-from cable_api.tests.helpers import get_auth_headers
+from cable_api.tests.test_helpers import get_auth_headers
 
 @override_settings(MEDIA_ROOT = 'cable_api/tests/media')
 class TestMessagesView(APITestCase):
