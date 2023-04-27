@@ -55,15 +55,9 @@ def user_view(request, user_id):
         user_update_serializer = UserUpdateSerializer(data=request.data)  
         user_update_serializer.is_valid(raise_exception=True)
         
-        user = get_user_model().objects.filter(id = user_id).first() or None
-
-        if user == None:
- 
-            response_dict = {'detail': 'This object does not exist.'}
-
-            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+        user = get_object_or_404(get_user_model(), id = user_id)
         
-        elif request.user.id != user_id:
+        if request.user.id != user_id:
 
             response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
 
@@ -87,13 +81,7 @@ def user_view(request, user_id):
     
     elif request.method == 'DELETE':
 
-        user = get_user_model().objects.filter(id = user_id).first() or None
-
-        if user == None:
-
-            response_dict = {'detail': 'This object does not exist.'}
-
-            return Response(response_dict, status=status.HTTP_404_NOT_FOUND)
+        user = get_object_or_404(get_user_model(), id = user_id)
         
         user.delete()
 
