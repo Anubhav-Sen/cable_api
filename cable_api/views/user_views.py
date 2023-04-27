@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from cable_api.serializers import UserSerializer, UserUpdateSerializer
-from cable_api.views.view_helpers import get_object_list_or_404, get_object_or_404
-        
+from cable_api.views.view_helpers import get_object_list_or_404, get_object_or_404, check_user_object_perms
+
 @api_view(['GET', 'POST'])
 def users_view(request):
     """
@@ -56,13 +56,9 @@ def user_view(request, user_id):
         user_update_serializer.is_valid(raise_exception=True)
         
         user = get_object_or_404(get_user_model(), id = user_id)
-        
-        if request.user.id != user_id:
 
-            response_dict = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
-
-            return Response(response_dict, status=status.HTTP_401_UNAUTHORIZED)
-            
+        check_user_object_perms(user, request.user)
+             
         for key, value in user_update_serializer.validated_data.copy().items():
             
             if value == None:
@@ -82,6 +78,8 @@ def user_view(request, user_id):
     elif request.method == 'DELETE':
 
         user = get_object_or_404(get_user_model(), id = user_id)
+
+        check_user_object_perms(user, request.user)
         
         user.delete()
 
