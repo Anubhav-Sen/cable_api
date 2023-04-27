@@ -51,3 +51,22 @@ def check_object_perms(obj, *user_filter):
     if not obj_filtered_by_user:
 
         raise Unauthorized('Unauthorized to use this method on this endpoint or object.')
+    
+
+def clean_serializer_data(data):
+    """
+    A function that:
+    - Creates a copy of a serializer's validated data dictionary.
+    - Pops all keys that have null values.
+    - Returns the cleaned data.
+    """
+
+    data = data.copy()
+
+    for key, value in data.items():
+    
+        if value == None:
+
+            data.pop(key)
+
+    return data

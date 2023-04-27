@@ -269,6 +269,19 @@ class TestUserAgainstUnauthorizedUser(APITestCase):
         self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
         self.assertEqual(expected_response, json.loads(response.content))
 
+    def test_user_view_DELETE_unauthorized_user(self):
+        """
+        A method to test the DELETE method of the "api/users/user_id/" on a protected user without correct credentials.
+        """ 
+        endpoint = reverse('user', kwargs={'user_id': self.user_object.id})
+        
+        expected_response = {'detail': 'Unauthorized to use this method on this endpoint or object.'}
+
+        response = self.client.delete(endpoint, format='multipart', **self.auth_headers)
+
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
+        self.assertEqual(expected_response, json.loads(response.content))
+
     def tearDown(self):
         """
         A method to delete data and revert the changes made using the setup method after each test run.
