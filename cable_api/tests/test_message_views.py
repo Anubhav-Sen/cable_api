@@ -112,7 +112,7 @@ class TestMessagesWhenObjectsDontExist(APITestCase):
         """
         endpoint = reverse('messages', kwargs={'chat_id': '0'})
 
-        expected_response = {'detail': 'These objects do not exist.'}
+        expected_response = {'detail': 'This object does not exist.'}
 
         response = self.client.get(endpoint, **self.auth_headers)
 

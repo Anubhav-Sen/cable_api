@@ -57,6 +57,7 @@ def chat_view(request, chat_id):
     if request.method == 'GET':
 
         chat = get_object_or_404(Chat, id = chat_id)
+        
         check_object_perms(chat, participants__model_user = request.user)
            
         chat_serializer = ChatSerializer(chat)
@@ -71,7 +72,7 @@ def chat_view(request, chat_id):
         chat_serializer.is_valid(raise_exception=True)
         
         chat = get_object_or_404(Chat, id = chat_id)
-        
+
         check_object_perms(chat, participants__model_user = request.user)
 
         update_data = clean_serializer_data(chat_serializer.validated_data)            
