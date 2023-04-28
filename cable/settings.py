@@ -137,11 +137,11 @@ WSGI_APPLICATION = 'cable.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'railway',
-        'USER': 'postgres',
-        'PASSWORD': 'rxDJyDZIGpsIbXBLb9Qn',
-        'HOST': 'containers-us-west-21.railway.app',
-        'PORT': '7288',
+        'NAME': env('NAME'),
+        'USER': env('USER'),
+        'PASSWORD': env('PASSWORD'),
+        'HOST': env('HOST'),
+        'PORT': env('PORT'),
     }
 }
 
